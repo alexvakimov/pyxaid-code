@@ -1,0 +1,10 @@
+&inputpp
+  prefix = 'x1',
+  outdir = './',
+  pseudo_dir = '/usr/local/group/oprezhdo_group/QE_PP/upf_files/',
+  psfile(1) = 'C.pbe-rrkjus.UPF',
+  psfile(2) = 'H.pbe-rrkjus.UPF',
+  single_file = .FALSE.,
+  ascii = .TRUE.,
+  uspp_spsi = .FALSE.,
+/

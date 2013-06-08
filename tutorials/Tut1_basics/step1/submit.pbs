@@ -1,0 +1,19 @@
+#PBS -q exciton_long
+#PBS -l nodes=1:ppn=12
+#PBS -l walltime=20:00:00
+#PBS -l pvmem=1800mb
+#PBS -o qespresso.out
+#PBS -j oe
+#PBS -N qespresso
+#PBS -m n
+#PBS -V
+
+cd $PBS_O_WORKDIR
+echo $PBS_O_WORKDIR
+
+NP=$(wc -l $PBS_NODEFILE | awk '{print $1}')
+echo $NP
+
+exe_qespresso=/usr/local/group/oprezhdo_group/espresso-5.0.1/bin/pw.x
+mpirun -n $NP $exe_qespresso < x.md.in > x.md.out
+

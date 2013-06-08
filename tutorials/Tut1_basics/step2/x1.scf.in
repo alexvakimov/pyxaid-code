@@ -1,0 +1,45 @@
+&CONTROL
+  calculation = 'scf',
+  pseudo_dir = '/usr/local/group/oprezhdo_group/QE_PP/upf_files/',
+  outdir = './',
+  prefix = 'x1',
+/
+
+&SYSTEM
+  ibrav = 0,
+  celldm(1) = 1.89,
+  nat = 72,
+  ntyp = 2,
+  nbnd = 123,
+  ecutwfc = 40,
+  ecutrho = 400,
+  tot_charge = -1.0,
+  nspin = 2,
+  starting_magnetization(1) = 0.01
+  occupations = 'smearing',
+  smearing = 'gaussian',
+  degauss = 0.005,
+  nosym = .true.,
+  input_dft = 'pbe'
+/
+
+&ELECTRONS
+  electron_maxstep = 300,
+  conv_thr = 1.D-5,
+  mixing_beta = 0.45,
+/
+
+ATOMIC_SPECIES
+ C  12.01  C.pbe-rrkjus.UPF
+ H  1.008  H.pbe-rrkjus.UPF
+
+
+K_POINTS gamma
+
+
+CELL_PARAMETERS (alat=  1.89000000)
+  16.116539864   0.078130078  -0.697183479
+  -0.215286547   4.388770959   1.408748185
+  -0.216095729   1.732557958   9.747552271
+
+

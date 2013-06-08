@@ -1,0 +1,20 @@
+#PBS -q exciton
+#PBS -l nodes=1:ppn=1
+#PBS -l walltime=40:00:00
+#PBS -l pvmem=20000mb
+#PBS -o pyxaid.log
+#PBS -j oe
+#PBS -N pentacene
+#PBS -m n
+#PBS -V
+
+
+cd $PBS_O_WORKDIR
+echo "Current working directory is: $PBS_O_WORKDIR"
+# Automatically determine the number of available nodes
+NP=$(wc -l $PBS_NODEFILE | awk '{print $1}')
+echo "Running on $NP nodes"
+
+
+python py-scr3.py  > namd_$PBS_JOBID
+

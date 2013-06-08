@@ -1,0 +1,59 @@
+#
+set terminal pngcairo font "arial,24" size 800, 600 enhanced rounded truecolor
+
+set lmargin at screen 0.15
+set rmargin at screen 0.80
+set bmargin at screen 0.20
+set tmargin at screen 0.85
+
+
+set nokey
+#set palette rgbformulae 22,13,-31
+set palette rgbformulae 7,5,15
+
+# 3D pictures, colored by z-value 
+#set auto
+#set parametric
+#set pm3d implicit at s
+
+# 2D pictures, colored by z-value
+#set contour
+set pm3d map
+set pm3d interpolate 0,0  # first - y axis, second - x axis
+set pm3d explicit at b
+
+
+
+set xrange [-1.0:6.0]
+set yrange [-1.0:6.0]
+
+set xlabel "E_i - E_{HOMO}, eV"  offset 0.0, 0.5
+set ylabel "E_j - E_{HOMO}, eV"  offset -0.5, 0.0
+
+set label "<|Re(H_{ij})|>, meV" at 5.0, 7.0
+set output "1ave_Ham_re.png"
+splot "1ave_Ham_re.dat" using ($1-1.97):($2-1.97):($3*1000.0)  #w lines
+unset label 
+
+set label "<|Im(H_{ij})|>, meV" at 5.0, 7.0
+set output "1ave_Ham_im.png"
+splot "1ave_Ham_im.dat" using ($1-1.97):($2-1.97):($3*1000.0)   #w lines
+unset label 
+
+
+set label "<|{H'_x,}_{ij}|>, arb. units" at 4.0, 7.0
+set output "1ave_Hprime_x_re.png"
+splot "1ave_Hprime_x_re.dat" using ($1-1.97):($2-1.97):($3) #w lines
+unset label
+
+set label "<|{H'_y,}_{ij}|>, arb. units" at 4.0, 7.0
+set output "1ave_Hprime_y_re.png"
+splot "1ave_Hprime_y_re.dat" using ($1-1.97):($2-1.97):($3)  #w lines
+unset label
+
+set label "<|{H'_z,}_{ij}|>, arb. units" at 4.0, 7.0
+set output "1ave_Hprime_z_re.png"
+splot "1ave_Hprime_z_re.dat" using ($1-1.97):($2-1.97):($3)  #w lines
+unset label
+
+
