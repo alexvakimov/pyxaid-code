@@ -58,8 +58,10 @@ int namd(boost::python::dict inp_params){
   double en_scl = 1.0;
   if(params.energy_units=="Ry"){ en_scl = Ry_to_eV; }
 
-  complex<double> hp_scl(hbar,0.0); // = -ihbar; This is because I initially overlooked i (complex unity) in p operator
-                                    // Thus, the field-matter interaction Hamiltonian is a real matrix
+  complex<double> hp_scl(1.0,0.0); // = -ihbar; This is because I initially overlooked i (complex unity) in p operator
+                                   // Thus, the field-matter interaction Hamiltonian is a real matrix
+                                   // Also: hbar is included in e*hbar/m_e prefactor, coming in Efield function, so for 
+                                   // now we don't need to scale values in Hprime_ files
 
   //-------------------------------------------------------------------
   //------------------- Batch mode preparations -----------------------
@@ -121,24 +123,30 @@ int namd(boost::python::dict inp_params){
         std::string Hprime_y_file; Hprime_y_file = params.Hprime_y_prefix + int2string(j) + params.Hprime_y_suffix;
         std::string Hprime_z_file; Hprime_z_file = params.Hprime_z_prefix + int2string(j) + params.Hprime_z_suffix;
 
-        if(params.debug_flag==1){ cout<<"Reading transition dipole file(x component) = "<<Hprime_x_file<<endl; }
+        if(params.debug_flag==1){ cout<<"Reading transition dipole file in momentum representation (x component) = "
+        <<Hprime_x_file<<endl; }
         file2matrix(Hprime_x_file,Hprime_x);
         extract_2D(Hprime_x,Hprime_x_crop,me_states[0].active_space,-1);
 
-        if(params.debug_flag==1){ cout<<"Reading transition dipole file(y component) = "<<Hprime_y_file<<endl; }
+        if(params.debug_flag==1){ cout<<"Reading transition dipole file in momentum representation (y component) = "
+        <<Hprime_y_file<<endl; }
         file2matrix(Hprime_y_file,Hprime_y);
         extract_2D(Hprime_y,Hprime_y_crop,me_states[0].active_space,-1);
 
-        if(params.debug_flag==1){ cout<<"Reading transition dipole file(z component) = "<<Hprime_z_file<<endl; }
+        if(params.debug_flag==1){ cout<<"Reading transition dipole file in momentum representation (z component) = "
+        <<Hprime_z_file<<endl; }
         file2matrix(Hprime_z_file,Hprime_z);
         extract_2D(Hprime_z,Hprime_z_crop,me_states[0].active_space,-1);
 
         vector< vector<double> > tmp(Hprime_x_crop.size(),vector<double>(Hprime_x_crop.size(),0.0));
         //------------ Create matrix --------
-        matrix Hprimex(Hprime_x_crop,tmp);
-        matrix Hprimey(Hprime_y_crop,tmp);
-        matrix Hprimez(Hprime_z_crop,tmp);
+        // Compose matrices with complex elements from the matrices with real elements
+        // In our case Hprime_ must be purely imaginary, so:
+        matrix Hprimex(tmp,Hprime_x_crop);
+        matrix Hprimey(tmp,Hprime_y_crop);
+        matrix Hprimez(tmp,Hprime_z_crop);
 
+        // Now scale Hprime_ elements by common scaling factor
         Hprimex *= hp_scl; Hprimey *= hp_scl; Hprimez *= hp_scl;
         if(params.debug_flag==2){   
           cout<<"Scaled Hprimex = "<<Hprimex<<endl;
