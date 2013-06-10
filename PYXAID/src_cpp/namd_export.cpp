@@ -58,7 +58,8 @@ int namd(boost::python::dict inp_params){
   double en_scl = 1.0;
   if(params.energy_units=="Ry"){ en_scl = Ry_to_eV; }
 
-  complex<double> hp_scl = -ihbar;
+  complex<double> hp_scl(hbar,0.0); // = -ihbar; This is because I initially overlooked i (complex unity) in p operator
+                                    // Thus, the field-matter interaction Hamiltonian is a real matrix
 
   //-------------------------------------------------------------------
   //------------------- Batch mode preparations -----------------------
