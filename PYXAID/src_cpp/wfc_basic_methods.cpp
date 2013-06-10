@@ -406,6 +406,7 @@ void wfc::compute_Hprime(int minband,int maxband,std::string filename){
 
 // Compute
   complex<double> scl(1.0,0.0); // scaling factor
+  complex<double> scl1(0.0,1.0);
   
   for(int i=minband;i<=maxband;i++){
     for(int j=minband;j<=maxband;j++){
@@ -423,8 +424,9 @@ void wfc::compute_Hprime(int minband,int maxband,std::string filename){
           Hx += tmp * gx;  Hy += tmp * gy;  Hz += tmp * gz;
         }
         else if(is_compl==1){
-          if(g==0){ Hx += tmp * gx;  Hy += tmp * gy;  Hz += tmp * gz; }
-          else{ Hx += 2.0*tmp.real() * gx;  Hy += 2.0*tmp.real() * gy;  Hz += 2.0*tmp.real() * gz; }
+          if(g==0){ Hx += tmp * gx;  Hy += tmp * gy;  Hz += tmp * gz; } // This should give zero!
+          // Now the Hprime_ matrices are purely imaginary, for the case of gamma-symmetry.
+          else{ Hx += 2.0*scl1*tmp.real() * gx;  Hy += 2.0*scl1*tmp.real() * gy;  Hz += 2.0*scl1*tmp.real() * gz; }
         }
         
       }// for g
