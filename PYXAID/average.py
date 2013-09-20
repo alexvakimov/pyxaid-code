@@ -82,6 +82,15 @@ def average(namdtime,num_states,iconds,opt,MS,inp_dir,res_dir):
 
 #>>>>>>>>>>>>>>>>>>>>> MAIN PROGRAM <<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 #>>>>>>>>> Fisrt part microstates populations and energies <<<<<<
+
+# It turns out that for this first part we need to use MS containing element-wise states:
+# so:
+    ms = []
+    for i in dist_ex:
+        ms.append([i])
+
+   # and now use ms instead of MS, but only for the first part
+
     if opt==1 or opt==12:
 
         for in_ex in dist_ex:
@@ -102,7 +111,7 @@ def average(namdtime,num_states,iconds,opt,MS,inp_dir,res_dir):
             while t<namdtime:
                 p,c = [],[]
                 j = 0
-                while j<len(MS):
+                while j<len(ms):
                     p.append(0.0)
                     c.append(0.0)
                     j = j + 1
@@ -130,7 +139,7 @@ def average(namdtime,num_states,iconds,opt,MS,inp_dir,res_dir):
                     #P = add_arrays(P,pP)
                     EP = add_arrays(EP,pe)
                     #print len(pP),len(pP[0]),len(MS),len(MS[0])
-                    cpP = contract_array(pP,MS) # Dimension:  T x num_macro_states
+                    cpP = contract_array(pP,ms) # Dimension:  T x num_macro_states
                     P = add_arrays(P,cpP)
 
 
@@ -139,7 +148,7 @@ def average(namdtime,num_states,iconds,opt,MS,inp_dir,res_dir):
                     ce = sum_mult_arrays(eE,cC)
                     #C = add_arrays(C,cC)
                     EC = add_arrays(EC,ce)
-                    ccC = contract_array(cC,MS)  # Dimension: T x num_macro_states
+                    ccC = contract_array(cC,ms)  # Dimension: T x num_macro_states
                     C = add_arrays(C,ccC)
 
                     #================================================================
@@ -149,8 +158,8 @@ def average(namdtime,num_states,iconds,opt,MS,inp_dir,res_dir):
 
 #            write_array(res_dir+"/sh_pop_ex",in_ex,namdtime,num_states,P,num_runs)
 #            write_array(res_dir+"/se_pop_ex",in_ex,namdtime,num_states,C,num_runs)
-            write_array(res_dir+"/sh_pop_ex",in_ex,namdtime,len(MS),P,num_runs)
-            write_array(res_dir+"/se_pop_ex",in_ex,namdtime,len(MS),C,num_runs)
+            write_array(res_dir+"/sh_pop_ex",in_ex,namdtime,len(ms),P,num_runs)
+            write_array(res_dir+"/se_pop_ex",in_ex,namdtime,len(ms),C,num_runs)
 
             write_array(res_dir+"/sh_en_ex",in_ex,namdtime,1,EP,num_runs)
             write_array(res_dir+"/se_en_ex",in_ex,namdtime,1,EC,num_runs)
