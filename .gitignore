@@ -1,0 +1,6 @@
+# This is comment line
+*.[oa]
+*~
+~*
+*.so
+*.pyc
