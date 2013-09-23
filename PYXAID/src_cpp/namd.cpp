@@ -99,8 +99,33 @@ double decoherence_rates(vector<double>& x,double dt,std::string rt_dir,int regr
   double nrm = C[0];
   for(t=0;t<sz;t++){ C[t] /= nrm; }
 
-  //===== Part 2: Phonon spectrum ============
+  //===== Part 2: Phonon spectrum (spectral density function) ============
   // Do FT of the normalized autocorrelation function
+
+  // Compute spectral density J
+  double dE = 0.0025; // spacing for x (energy) axis for spectral density function = 20 cm^-1
+  int Npoints = 400*5; // cover 5 eV range of energies
+  vector<double> J(Npoints,0.0);
+
+  for(int w=0;w<Npoints;w++){
+    J[w] = 1.0;
+
+    for(int t=1;t<sz;t++){
+      double x = (w*dE) * (t*dt);
+      J[w] += 2.0*cos(x)*C[t];
+    }// for t
+
+    J[w] *= dt;
+    J[w] = (J[w]*J[w]/(2.0*M_PI));
+
+  }// for w
+
+  // Output D and its model(based on the fitted parameters)
+  ofstream out1((rt_dir+"Spectral_density.txt").c_str(),ios::out);
+  for(w=0;w<Npoints;w++){ out1<<"w(eV)= "<<w*dE<<" w(cm^-1)= "<<w*dE*8065.54468111324<<" J= "<<J[w]
+                             <<" sqrt(J)= "<<sqrt(J[w])<<endl;
+  }
+  out1.close();
 
 
   //===== Part 3: Decoherence times ============
@@ -474,8 +499,68 @@ void run_namd1(InputStructure& is, vector<ElectronicStructure>& me_es,vector<me_
 
     file2matrix(filename,r_ij);
     rates = matrix(r_ij,z);
-  }
 
+
+    if(is.decoherence==2){ // NAC scaling
+
+      for(int t=0;t<sz;t++){
+        // Scale Hamiltonian (off-diagonal elements)
+        for(int i=0;i<nst;i++){
+          for(int j=0;j<nst;j++){
+            if(i!=j){
+              double dEij = (me_es[t].Hcurr->M[i*nst+i].real() - me_es[t].Hcurr->M[j*nst+j].real()); 
+              double tau = 1000.0; // 1 ps
+              if(rates.M[i*nst+j].real()>0.0){
+                tau = (1.0/rates.M[i*nst+j].real());
+              }
+              double x = 0.5*(dEij * tau / hbar);
+              double F = (fabs(dEij)/(2.0*sqrt(M_PI)*hbar)) * tau * exp(-x*x);
+              F = sqrt(F);
+
+              me_es[t].Hcurr->M[i*nst+j] *= F;  // scale NAC
+              me_es[t].Hprev->M[i*nst+j] *= F;  // scale NAC
+              me_es[t].Hnext->M[i*nst+j] *= F;  // scale NAC
+
+            }// i!=j
+          }// for j
+        }// for i
+      }// for t
+
+    }//is.decoherence == 2
+
+/*
+    if(is.decoherence==3){  // NAC scaling - spectral density variant
+      // Compute spectral density J
+      double dE = 0.05; // spacing for x (energy) axis for spectral density function
+      double Npoints = 20*10; // cover 10 eV range of energies 
+      vector< vector<vector<double> > > J(nst, vector< vector<double> >(nst,vector<double>(Npoints,0.0)));
+
+      for(int i=0;i<nst;i++){
+        for(int j=0;j<nst;j++){
+          if(i!=j){
+            double tau = 1000.0; // 1 ps
+            if(rates.M[i*nst+j].real()>0.0){  tau = (1.0/rates.M[i*nst+j].real());   }
+            
+            for(int w=0;w<Npoints;w++){
+
+              J[i][j][w] = 1.0;
+
+              for(int t=1;t<sz;t++){
+                double dEij = (me_es[t].Hcurr->M[i*nst+i].real() - me_es[t].Hcurr->M[j*nst+j].real());
+                double x = (dEij * t * is.nucl_dt / hbar);
+
+                J[i][j][w] += 
+              }// for t
+
+            }
+
+          }// i!=j
+        }// for j
+      }// for i
+    }// is.decoherence == 3
+*/
+
+  }// decoherence > 0
 
   // Because we will be propagating num_sh_traj independent trajectories at the same time, we will
   // need such an array, initially containing identical entries. Unfortunately this means the memory requirement
@@ -520,10 +605,16 @@ void run_namd1(InputStructure& is, vector<ElectronicStructure>& me_es,vector<me_
         curr_state = me_es[i].curr_state;
         hop(me_es[i].g,curr_state,nst);
       }
-      else if(is.decoherence>0){  // DISH - currently any value >0
+      else if(is.decoherence==1){  // DISH - currently any value >0
         me_es[i].check_decoherence(is.nucl_dt,is.boltz_flag,is.Temp,rates);
         curr_state = me_es[i].curr_state;
-      }// decoherence > 0
+      }// decoherence == 1
+
+      else if(is.decoherence==2){  // NAC scaling
+        curr_state = me_es[i].curr_state;
+        hop(me_es[i].g,curr_state,nst);
+      }// decoherence == 2
+
 
 
       // Accumulate SE and SH probabilities for all states
