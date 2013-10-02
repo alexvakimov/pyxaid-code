@@ -153,8 +153,8 @@ double decoherence_rates(vector<double>& x,double dt,std::string rt_dir,int regr
 
   // Output D and its model(based on the fitted parameters)
   ofstream out((rt_dir+"Dephasing_function.txt").c_str(),ios::out);
-  out<<"Time    D(t)       fitted D(t)     Autocorrelation function    Second cumulant\n";
-  for(t=0;t<sz;t++){  out<<t*dt<<"  "<<D[t]<<"  "<<exp(-a) * exp(-b*t*t*dt*dt)<<"  "<<C[t]<<"  "<<IIC[t]<<"\n";  }
+  out<<"Time    D(t)       fitted D(t)     Normalized_autocorrelation_function  Unnormalized_autocorrelation_function   Second cumulant\n";
+  for(t=0;t<sz;t++){  out<<t*dt<<"  "<<D[t]<<"  "<<exp(-a) * exp(-b*t*t*dt*dt)<<"  "<<C[t]<<" "<<nrm*C[t]<<"  "<<IIC[t]<<"\n";  }
   out.close();
 
   return sqrt(b);
@@ -503,7 +503,12 @@ void run_namd1(InputStructure& is, vector<ElectronicStructure>& me_es,vector<me_
 
     if(is.decoherence==2){ // NAC scaling
 
+      std::string filename = is.scratch_dir+"/scaling_factors_icond"+int2string(icond)+".txt";
+      ofstream out(filename.c_str(),ios::out);
+
       for(int t=0;t<sz;t++){
+
+        out<<"t= "<<t<<"  ";
         // Scale Hamiltonian (off-diagonal elements)
         for(int i=0;i<nst;i++){
           for(int j=0;j<nst;j++){
@@ -521,44 +526,78 @@ void run_namd1(InputStructure& is, vector<ElectronicStructure>& me_es,vector<me_
               me_es[t].Hprev->M[i*nst+j] *= F;  // scale NAC
               me_es[t].Hnext->M[i*nst+j] *= F;  // scale NAC
 
+              out<<" dE("<<i<<","<<j<<")= "<<dEij<<" F= "<<F<<" ";
             }// i!=j
           }// for j
         }// for i
+        out<<endl;
       }// for t
-
+      out.close();
     }//is.decoherence == 2
 
-/*
+
     if(is.decoherence==3){  // NAC scaling - spectral density variant
-      // Compute spectral density J
-      double dE = 0.05; // spacing for x (energy) axis for spectral density function
-      double Npoints = 20*10; // cover 10 eV range of energies 
+
+      // Read in the spectral density J
+      double dE = 0.0025; // spacing for x (energy) axis for spectral density function = 20 cm^-1
+      int Npoints = 400*5; // cover 5 eV range of energies
       vector< vector<vector<double> > > J(nst, vector< vector<double> >(nst,vector<double>(Npoints,0.0)));
 
       for(int i=0;i<nst;i++){
         for(int j=0;j<nst;j++){
           if(i!=j){
-            double tau = 1000.0; // 1 ps
-            if(rates.M[i*nst+j].real()>0.0){  tau = (1.0/rates.M[i*nst+j].real());   }
-            
-            for(int w=0;w<Npoints;w++){
+    
+            cout<<"Reading spectral density for this initial condition...\n";
+            std::string filename = is.scratch_dir+"/icond"+int2string(icond)+"pair"+int2string(i)+"_"+int2string(j)+"Spectral_density.txt";
+            cout<<"Expected filename is: "<<filename<<endl;
 
-              J[i][j][w] = 1.0;
+            ifstream in;
+            in.open(filename.c_str(),ios::in);
+            if(in.is_open()){  cout<<"Reading the input from file "<<filename<<endl; }
+            else{ cout<<"Error: Can not open file "<<filename<<". Check if this file exists\n"; }
+            in.close();
 
-              for(int t=1;t<sz;t++){
-                double dEij = (me_es[t].Hcurr->M[i*nst+i].real() - me_es[t].Hcurr->M[j*nst+j].real());
-                double x = (dEij * t * is.nucl_dt / hbar);
+            // Reading spectral density for given pair, storing data in arrays G (gaps) and J (spectral dens.)
+            vector<std::string> lines;
+            vector<double> G(Npoints,0.0);
+            vector<double> J(Npoints,0.0);
+            read_file(filename, 0, lines);
 
-                J[i][j][w] += 
-              }// for t
+            vector<std::string> line_tokens;
+            for(int w=0;w<Npoints;w++){ 
+              split_line(lines[w],line_tokens);
+              G[w] = atof(line_tokens[1].c_str());
+              J[w] = atof(line_tokens[5].c_str());
+              line_tokens.clear();
+              
+            }// for w
 
-            }
+            // Now we are ready to scale the gap for i->j transition for all times
+            for(int t=0;t<sz;t++){
+              double dEij = fabs(me_es[t].Hcurr->M[i*nst+i].real() - me_es[t].Hcurr->M[j*nst+j].real());
+
+              int indx = floor((dEij - 0.0)/dE); 
+              double fra = (dEij - G[indx]);
+
+              double scl = J[indx] + fra*(J[indx+1] - J[indx])/(G[indx+1] - G[indx]);
+
+              if(scl<0.0){ scl = 0.0; }
+
+              scl = sqrt(scl);
+
+              me_es[t].Hcurr->M[i*nst+j] *= scl;  // scale NAC
+              me_es[t].Hprev->M[i*nst+j] *= scl;  // scale NAC
+              me_es[t].Hnext->M[i*nst+j] *= scl;  // scale NAC
+
+              
+            }// for t
+
 
           }// i!=j
         }// for j
       }// for i
     }// is.decoherence == 3
-*/
+
 
   }// decoherence > 0
 
@@ -610,10 +649,12 @@ void run_namd1(InputStructure& is, vector<ElectronicStructure>& me_es,vector<me_
         curr_state = me_es[i].curr_state;
       }// decoherence == 1
 
-      else if(is.decoherence==2){  // NAC scaling
+      else if(is.decoherence==2 || is.decoherence==3 || is.decoherence==4){  // NAC scaling
         curr_state = me_es[i].curr_state;
         hop(me_es[i].g,curr_state,nst);
       }// decoherence == 2
+
+
 
 
 
