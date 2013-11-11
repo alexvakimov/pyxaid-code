@@ -208,11 +208,13 @@ def runMD(params):
 
                 # Finally compute Hamiltonian and the overlap matrix
                 # In this case - any reasonable value for nocc leads to the same results
-                ham(curr_wfc0,next_wfc0,0,0,minband,maxband,dt,"%s/0_Ham_%d" % (rd, curr_index) )
+                # Keep in mind, the curr_wfc0 - is already only a subset of the whole wfc that has been 
+                # computed, so all bands - from 0 to maxband - minband will be active!
+                ham(curr_wfc0,next_wfc0,0,0, 0,maxband-minband, dt,"%s/0_Ham_%d" % (rd, curr_index) )
  
                 if compute_Hprime==1:
                     curr_wfc0.QE_read_acsii_grid("%s/curr0/x0.export/grid.1" % wd)
-                    curr_wfc0.compute_Hprime(minband,maxband,"%s/0_Hprime_%d" % (rd, curr_index) )
+                    curr_wfc0.compute_Hprime(0,maxband-minband,"%s/0_Hprime_%d" % (rd, curr_index) )
 
 
             if nac_method>=1:
@@ -235,13 +237,13 @@ def runMD(params):
                 # Finally compute Hamiltonian and the overlap matrix
                 # WORKS ONLY IN CASE: curr_wfc0.nspin==2 and curr_wfc1.nspin==2:
                 # other cases yet to be implemented
-
                 # here we use maxband-1 because 1 orbitals is skipped
-                ham(curr_wfc1,next_wfc1,0,0,minband,maxband-1,dt,"%s/1_Ham_%d" % (rd, curr_index) )
+
+                ham(curr_wfc1,next_wfc1,0,0, 0,maxband-1-minband, dt,"%s/1_Ham_%d" % (rd, curr_index) )
 
                 if compute_Hprime==1:
                     curr_wfc1.QE_read_acsii_grid("%s/curr1/x1.export/grid.1" % wd)
-                    curr_wfc1.compute_Hprime(minband,maxband-1,"%s/1_Hprime_%d" % (rd, curr_index) )
+                    curr_wfc1.compute_Hprime(0,maxband-1-minband,"%s/1_Hprime_%d" % (rd, curr_index) )
 
 
             #-----------------------------------------------------------------
