@@ -105,9 +105,17 @@ def runMD(params):
         # Wavefunctions for the neutral system
         curr_wfc0 = wfc()
         next_wfc0 = wfc()
+        # Auxiliary wavefunction for the neutral system
+        curr_tmp0 = wfc()
+        next_tmp0 = wfc()
+
         # Wavefunctions for the charged system - will be used if nac_method==1
         curr_wfc1 = wfc()
         next_wfc1 = wfc()
+        # Auxiliary wavefunction for the charged system
+        curr_tmp1 = wfc()
+        next_tmp1 = wfc()
+ 
 
         if t==start_indx:
             # Run calculations
@@ -162,20 +170,23 @@ def runMD(params):
         if curr_index>=start_indx:
             # Read the N-electron wavefunction descriptions
             if nac_method>=0:
-                curr_wfc0.QE_read_acsii_index("%s/curr0/x0.export/index.xml" % wd)
-                curr_wfc0.QE_read_acsii_wfc("%s/curr0/x0.export/wfc.1" % wd )
+                curr_tmp0.QE_read_acsii_index("%s/curr0/x0.export/index.xml" % wd)
+                curr_tmp0.QE_read_acsii_wfc("%s/curr0/x0.export/wfc.1" % wd )
 
-                next_wfc0.QE_read_acsii_index("%s/next0/x0.export/index.xml" % wd)
-                next_wfc0.QE_read_acsii_wfc("%s/next0/x0.export/wfc.1" % wd )
+                next_tmp0.QE_read_acsii_index("%s/next0/x0.export/index.xml" % wd)
+                next_tmp0.QE_read_acsii_wfc("%s/next0/x0.export/wfc.1" % wd )
+
+
+                curr_wfc0 = wfc(curr_tmp0,minband,nocc,curr_tmp0,nocc+1,maxband)
+                next_wfc0 = wfc(next_tmp0,minband,nocc,next_tmp0,nocc+1,maxband)
+
 
 
             if nac_method>=1:
                 # In addition read info for N+1 electron wavefnctions
-                curr_tmp1 = wfc()
                 curr_tmp1.QE_read_acsii_index("%s/curr1/x1.export/index.xml" % wd)
                 curr_tmp1.QE_read_acsii_wfc("%s/curr1/x1.export/wfc.1" % wd )
 
-                next_tmp1 = wfc()
                 next_tmp1.QE_read_acsii_index("%s/next1/x1.export/index.xml" % wd)
                 next_tmp1.QE_read_acsii_wfc("%s/next1/x1.export/wfc.1" % wd )
 
@@ -183,8 +194,8 @@ def runMD(params):
                 # Careful - we take the second wavefunction not from nocc+1 but from nocc+2
                 # that is we simply skip the orbital nocc+1 from the second (charged) wavefunction
                 # this is because in charged system this is a HOMO, while we need LUMO
-                curr_wfc1 = wfc(curr_wfc0,minband,nocc,curr_tmp1,nocc+2,maxband)
-                next_wfc1 = wfc(next_wfc0,minband,nocc,next_tmp1,nocc+2,maxband)
+                curr_wfc1 = wfc(curr_tmp0,minband,nocc,curr_tmp1,nocc+2,maxband)
+                next_wfc1 = wfc(next_tmp0,minband,nocc,next_tmp1,nocc+2,maxband)
 
 
 
