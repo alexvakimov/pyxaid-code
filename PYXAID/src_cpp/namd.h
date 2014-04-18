@@ -16,7 +16,7 @@
 
 
 void hop(vector<double>& sh_prob,int& state,int num_states);
-void solve_electronic(InputStructure& is,vector<ElectronicStructure>& es);
+void solve_electronic(InputStructure& is,vector<ElectronicStructure>& es,matrix&);
 
 void run_decoherence_rates(InputStructure& is, vector<ElectronicStructure>& me_es,vector<me_state>& me_states, int icond);
 void run_namd(InputStructure& is, vector<ElectronicStructure>& me_es,vector<me_state>& me_states,int icond);
