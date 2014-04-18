@@ -353,9 +353,56 @@ void ElectronicStructure::propagate_coefficients(double dt,matrix& Ef){
       rot(Hcurr->M[i*num_states+j]+Hprime,0.5*dt,i,j);
     }
   }
-
   
 }
+
+void ElectronicStructure::propagate_coefficients(double dt,matrix& Ef,matrix& rates){
+
+  int i,j;
+  complex<double> Hprime;
+
+//  update_decoherence_times(rates);
+
+  // exp(iLij * dt/2)  ---->
+  for(i=0;i<num_states;i++){
+    for(j=i+1;j<num_states;j++){
+      Hprime = Ef.M[0]*Hprimex->M[i*num_states+j] +
+               Ef.M[1]*Hprimey->M[i*num_states+j] +
+               Ef.M[2]*Hprimez->M[i*num_states+j];
+
+      rot(Hcurr->M[i*num_states+j]+Hprime,0.5*dt,i,j);
+    }
+  }
+
+  update_populations();
+
+  // exp(iL1 * dt)
+  for(i=0;i<num_states;i++){
+    Hprime = Ef.M[0]*Hprimex->M[i*num_states+i] +
+             Ef.M[1]*Hprimey->M[i*num_states+i] +
+             Ef.M[2]*Hprimez->M[i*num_states+i];
+
+    tau_m[i] = 0.0;
+    for(j=0;j<num_states;j++){
+      tau_m[i] += A->M[j*num_states+j].real()*rates.M[i*num_states+j].real();
+    }// for j
+
+    phase(Hcurr->M[i*num_states+i]+Hprime+4.0*tau_m[i]*hbar,dt,i);
+  }
+
+  // exp(iLij * dt/2)  <----
+  for(i=num_states-1;i>=0;i--){
+    for(j=num_states-1;j>i;j--){
+      Hprime = Ef.M[0]*Hprimex->M[i*num_states+j] +
+               Ef.M[1]*Hprimey->M[i*num_states+j] +
+               Ef.M[2]*Hprimez->M[i*num_states+j];
+
+      rot(Hcurr->M[i*num_states+j]+Hprime,0.5*dt,i,j);
+    }
+  }
+
+}
+
 
 void ElectronicStructure::propagate_coefficients1(double dt,int opt,matrix& Ef){
 /***********************************************************************

@@ -194,6 +194,7 @@ public:
   void check_decoherence(double dt,int boltz_flag,double Temp,matrix& rates); // practically DISH correction
 
   void propagate_coefficients(double dt,matrix& Ef);  // Trotter factorization
+  void propagate_coefficients(double dt,matrix& Ef,matrix&);  // Trotter factorization with purostat
   void propagate_coefficients1(double dt,int opt,matrix& Ef); // Finite difference
   void propagate_coefficients2(double dt,matrix& Ef); // "Exact"
 
