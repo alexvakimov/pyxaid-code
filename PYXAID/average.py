@@ -219,7 +219,7 @@ def average(namdtime,num_states,iconds,opt,MS,inp_dir,res_dir):
                 #===================== me_pop file ==============================
                 cC = get_file(res_dir+"/se_pop_ex",MS[i][j],namdtime,num_states,3,2) # Dimension: T x num_states
                 ccC = contract_array(cC,MS)  # Dimension: T x num_macro_states
-                C = add_arrays(C,cC)
+                C = add_arrays(C,ccC)
 
                 #================================================================
                 j = j + 1
