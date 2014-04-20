@@ -79,7 +79,13 @@ int namd(boost::python::dict inp_params){
   vector< matrix > Hprime_y_batch;
   vector< matrix > Hprime_z_batch;
 
-  if(params.read_couplings=="batch"){
+  if(params.read_couplings=="batch" || params.read_couplings=="batch_all_in_one"){
+
+  // If params.read_couplings=="batch_all_in_one", then the filenames for real and imaginary parts can be the same
+  // file - the Hamiltonian will be composed from the diagonal (to become real part) and off-diagonal (to become
+  // imaginary part) elements.
+  // H_ij = F_ii    if i==j (real, diagonal)
+  // H_ij = -i*F_ij   if i!=j (imaginary, off-diagonal, "-" is the convention implying that F_ij = hbar * <i|d/dt|j> )
 
     for(int j=0;j<max_indx;j++){
       // -------------------- Real part of the Hamiltonian matrix -------------------------------------
@@ -100,6 +106,22 @@ int namd(boost::python::dict inp_params){
       file2matrix(Ham_im_file,Ham_im);
       extract_2D(Ham_im,Ham_im_crop,me_states[0].active_space,-1); // also crop the matrix to the active space
 
+      //--------------------- Optionally preprocess matrices ----------------------------------------------
+      if(params.read_couplings=="batch_all_in_one"){
+        for(int a=0;a<Ham_re_crop.size();a++){
+          for(int b=0;b<Ham_re_crop.size();b++){
+            if(a==b){
+              Ham_im_crop[a][a] = 0.0;
+            }
+            else{ 
+              Ham_re_crop[a][b] = 0.0;
+              Ham_im_crop[a][b] *= -1.0; 
+            }
+            
+          }// for b
+        }// for a
+      }// if all_in_one
+
       // -------------------- Create Hamiltonian matrix ---------------------------------------------------
       matrix Ham(Ham_re_crop,Ham_im_crop);
 //      cout<<"Composed Ham = "<<Ham<<endl;
@@ -109,8 +131,6 @@ int namd(boost::python::dict inp_params){
       if(params.debug_flag==2){   cout<<"Scaled Ham = "<<Ham<<endl; }
 
       H_batch.push_back(Ham);
-
-
 
 
       // -------------------- Real part of the transition dipole matrix -------------------------------------
@@ -191,7 +211,7 @@ int namd(boost::python::dict inp_params){
       matrix* T;
       matrix *Tx, *Ty, *Tz;
 
-      if(params.read_couplings=="online"){
+      if(params.read_couplings=="online" || params.read_couplings=="online_all_in_one"){
 
         // -------------------- Real part of the Hamiltonian matrix -------------------------------------
         vector< vector<double> > Ham_re, Ham_re_crop;
@@ -208,6 +228,23 @@ int namd(boost::python::dict inp_params){
         if(params.debug_flag==1){ cout<<"Reading Hamiltonian file(imaginary part) = "<<Ham_im_file<<endl; }
         file2matrix(Ham_im_file,Ham_im);
         extract_2D(Ham_im,Ham_im_crop,me_states[0].active_space,-1); // also crop the matrix to the active space
+
+        //--------------------- Optionally preprocess matrices ----------------------------------------------
+        if(params.read_couplings=="online_all_in_one"){
+          for(int a=0;a<Ham_re_crop.size();a++){
+            for(int b=0;b<Ham_re_crop.size();b++){
+              if(a==b){
+                Ham_im_crop[a][a] = 0.0;
+              }
+              else{
+                Ham_re_crop[a][b] = 0.0;
+                Ham_im_crop[a][b] *= -1.0;
+              }
+
+            }// for b
+          }// for a
+        }// if all_in_one
+
 
         // -------------------- Create Hamiltonian matrix ---------------------------------------------------
         matrix Ham(Ham_re_crop,Ham_im_crop);
