@@ -243,13 +243,19 @@ void InputStructure::sanity_check(){
   }
 
   // File reading-related options
-  if(read_couplings=="online" || read_couplings=="batch"){ ;; }
+  if(read_couplings=="online" || read_couplings=="batch" || 
+     read_couplings=="online_all_in_one" || read_couplings=="batch_all_in_one"){ ;; }
   else{
     cout<<"Error: read_couplings = "<<read_couplings<<" is not known\n";
     cout<<"Allowed values are:\n";
     cout<<"     online   -   read only those files that are needed for each given initial condition"
         <<" at the time the NA-MD with this initial condition is to be computed\n";
     cout<<"     batch    -   read all the files, needed for all initial conditions presented\n";
+    cout<<"     online_all_in_one -  same as online, but real and imaginary parts of Hamiltonian are"
+        <<" extracted from the same file\n";
+    cout<<"     batch_all_in_one -  same as batch, but real and imaginary parts of Hamiltonian are"
+        <<" extracted from the same file\n";
+
     cout<<"Exiting...\n";
     exit(0);
   }
