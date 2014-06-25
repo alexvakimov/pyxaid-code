@@ -8,6 +8,9 @@
 ***********************************************************/
 
 #include "matrix.h"
+#include <cstdlib>
+#include <cstdio>
+using namespace std;
 
 matrix::matrix(vector<vector<double> >& re_part,vector<vector<double> >& im_part){
 /*****************************************************************
@@ -259,7 +262,7 @@ istream& operator>>(istream& strm,matrix &ob){
 
 matrix matrix::conj(){
   matrix m(n_rows,n_cols);
-  for(int i=0;i<m.n_elts;i++){ m.M[i] = ::conj(M[i]); }
+  for(int i=0;i<m.n_elts;i++){ m.M[i] = std::conj(M[i]); }
   return m;
 }
 
@@ -277,7 +280,7 @@ matrix matrix::H(){
   matrix m(n_cols,n_rows);
   for(int i=0;i<n_rows;i++){
     for(int j=0;j<n_cols;j++){
-      m.M[j*n_rows+i] = ::conj(M[i*n_cols+j]);
+      m.M[j*n_rows+i] = std::conj(M[i*n_cols+j]);
     }
   }
   return m;
@@ -406,7 +409,7 @@ void matrix::eigen0(matrix& EVAL, matrix& EVECT,double EPS,int max_num_iter,int 
         complex<double> a = 2.0*temp.M[row*n_cols+col]/(temp.M[row*n_cols+row]-temp.M[col*n_cols+col]);
         complex<double> b = 2.0*temp.M[col*n_cols+row]/(temp.M[row*n_cols+row]-temp.M[col*n_cols+col]);      
         c = 1.0 + sqrt(1.0 + a*b);
-        s = ::conj(-a);
+        s = std::conj(-a);
       }
       // Case 2
       else{
@@ -414,14 +417,14 @@ void matrix::eigen0(matrix& EVAL, matrix& EVECT,double EPS,int max_num_iter,int 
         complex<double> b = temp.M[col*n_cols+row];
         double nrm = sqrt(norm(a)+norm(b));
         c = sqrt(b/nrm);
-        s = ::conj(sqrt(a/nrm));
+        s = std::conj(sqrt(a/nrm));
       }
       L = sqrt(norm(c) + norm(s));
       c = c/L;  s = s/L;
 
       V.load_identity();
-      V.M[row*n_cols + row] = c;   V.M[row*n_cols + col] = ::conj(-s);
-      V.M[col*n_cols + row] = s;   V.M[col*n_cols + col] = ::conj(c);
+      V.M[row*n_cols + row] = c;   V.M[row*n_cols + col] = std::conj(-s);
+      V.M[col*n_cols + row] = s;   V.M[col*n_cols + col] = std::conj(c);
    }// Shur decomposition
 
    else if(alg==1){
@@ -510,9 +513,9 @@ void matrix::QR(matrix& w,matrix& R){
       for(k=i;k<n;k++){
 
         dot = complex<double>(0.0,0.0);        
-        for(j=0;j<n;j++){ dot = dot + (::conj(w.M[j*n+k])*w.M[j*n+(i-1)]); }// for j
+        for(j=0;j<n;j++){ dot = dot + (std::conj(w.M[j*n+k])*w.M[j*n+(i-1)]); }// for j
 
-        dot = ::conj(dot); // This is very tricky part!!!  - arises in case of complex matrixes 
+        dot = std::conj(dot); // This is very tricky part!!!  - arises in case of complex matrixes 
 
         for(j=0;j<n;j++){ w.M[j*n+k] = w.M[j*n+k] - dot*w.M[j*n+(i-1)];}
 
@@ -523,7 +526,7 @@ void matrix::QR(matrix& w,matrix& R){
     
     // Simply normalize i-th column-vector
     nrm = 0.0;
-    for(j=0;j<n;j++){ nrm += (::conj(w.M[j*n+i])*w.M[j*n+i]).real(); }// for j
+    for(j=0;j<n;j++){ nrm += (std::conj(w.M[j*n+i])*w.M[j*n+i]).real(); }// for j
     nrm = sqrt(nrm);
     for(j=0;j<n;j++){ w.M[j*n+i] /= nrm; }
 
@@ -539,7 +542,7 @@ void matrix::QR(matrix& w,matrix& R){
         // R[i][j] = w_j * u_i, note w - is actually original matrix M, while u is what is now w.
         // Note: For complex (this) case the actual definition of the R[i][j] coefficients is:
         // R[j][i] = (w_j^*  x  u_i)^* = w_j * u_i^*, where ^* - denotes complex conjugation
-        R.M[i*n+j] += (M[k*n+j]) * ::conj(w.M[k*n+i]);
+        R.M[i*n+j] += (M[k*n+j]) * std::conj(w.M[k*n+i]);
       }// for k
     }// for j
   }// for i
@@ -576,9 +579,9 @@ void matrix::QR1(matrix& w,matrix& R){
 
         dot = complex<double>(0.0,0.0);
         // k = i, i+1 - two or 1 term in dot product computations
-        for(j=0;j<=min((i+2),(n-1));j++){ dot += (::conj(w.M[j*n+k])*w.M[j*n+(i-1)]); }        
+        for(j=0;j<=min((i+2),(n-1));j++){ dot += (std::conj(w.M[j*n+k])*w.M[j*n+(i-1)]); }        
 
-        dot = ::conj(dot); // This is very tricky part!!!  - arises in case of complex matrixes 
+        dot = std::conj(dot); // This is very tricky part!!!  - arises in case of complex matrixes 
 
 
         // k = i or i+1
@@ -591,7 +594,7 @@ void matrix::QR1(matrix& w,matrix& R){
     
     // Simply normalize i-th column-vector
     nrm = 0.0;
-    for(j=0;j<=min(n-1,(i+1));j++){ nrm += (::conj(w.M[j*n+i])*w.M[j*n+i]).real(); }// for j
+    for(j=0;j<=min(n-1,(i+1));j++){ nrm += (std::conj(w.M[j*n+i])*w.M[j*n+i]).real(); }// for j
     nrm = sqrt(nrm);
     for(j=0;j<=min(n-1,(i+1));j++){ w.M[j*n+i] /= nrm; }
 
@@ -608,7 +611,7 @@ void matrix::QR1(matrix& w,matrix& R){
         // Note: For complex (this) case the actual definition of the R[i][j] coefficients is:
         // R[j][i] = (w_j^*  x  u_i)^* = w_j * u_i^*, where ^* - denotes complex conjugation
         //if(j-i==0 || j-i==1 || j-i==2){
-          R.M[i*n+j] += (M[k*n+j]) * ::conj(w.M[k*n+i]);
+          R.M[i*n+j] += (M[k*n+j]) * std::conj(w.M[k*n+i]);
         //}
       }// for k
     }// for j
@@ -1108,15 +1111,15 @@ void matrix::tridiagonalize(matrix& T){
   for(i=0;i<(n-2);i++){
 
     w = 0.0;
-    nrm = 0.0; for(j=i+1;j<n;j++){ nrm += (::conj(T.M[j*n+i])*T.M[j*n+i]).real(); }  nrm = sqrt(nrm);
+    nrm = 0.0; for(j=i+1;j<n;j++){ nrm += (std::conj(T.M[j*n+i])*T.M[j*n+i]).real(); }  nrm = sqrt(nrm);
 
     if(abs(T.M[(i+1)*n+i])==0.0){ alp = complex<double>(1.0,0.0); }
     else{ alp = (T.M[(i+1)*n+i] / abs(T.M[(i+1)*n+i])) ; }
     
     w.M[i+1] = T.M[(i+1)*n+i] - alp*nrm; 
 
-    nrm = (::conj(w.M[i+1])*w.M[i+1]).real(); // norm of new vector x-y
-    for(j=i+2;j<n;j++){ w.M[j] = T.M[j*n+i]; nrm += (::conj(w.M[j])*w.M[j]).real(); }
+    nrm = (std::conj(w.M[i+1])*w.M[i+1]).real(); // norm of new vector x-y
+    for(j=i+2;j<n;j++){ w.M[j] = T.M[j*n+i]; nrm += (std::conj(w.M[j])*w.M[j]).real(); }
     nrm = sqrt(nrm);
 
     // Normalize new vector (w)
@@ -1174,15 +1177,15 @@ void matrix::tridiagonalize(matrix& T,matrix& H){
   for(i=0;i<(n-2);i++){
 
     w = 0.0;
-    nrm = 0.0; for(j=i+1;j<n;j++){ nrm += (::conj(T.M[j*n+i])*T.M[j*n+i]).real(); }  nrm = sqrt(nrm);
+    nrm = 0.0; for(j=i+1;j<n;j++){ nrm += (std::conj(T.M[j*n+i])*T.M[j*n+i]).real(); }  nrm = sqrt(nrm);
 
     if(abs(T.M[(i+1)*n+i])==0.0){ alp = complex<double>(1.0,0.0); }
     else{ alp = (T.M[(i+1)*n+i] / abs(T.M[(i+1)*n+i])) ; }
     
     w.M[i+1] = T.M[(i+1)*n+i] - alp*nrm; 
 
-    nrm = (::conj(w.M[i+1])*w.M[i+1]).real(); // norm of new vector x-y
-    for(j=i+2;j<n;j++){ w.M[j] = T.M[j*n+i]; nrm += (::conj(w.M[j])*w.M[j]).real(); }
+    nrm = (std::conj(w.M[i+1])*w.M[i+1]).real(); // norm of new vector x-y
+    for(j=i+2;j<n;j++){ w.M[j] = T.M[j*n+i]; nrm += (std::conj(w.M[j])*w.M[j]).real(); }
     nrm = sqrt(nrm);
 
     // Normalize new vector (w)
@@ -1465,7 +1468,7 @@ void solve_linsys(matrix& C,matrix& D, matrix& X,double eps,int maxiter,double o
 
         for( i = 0; i < m; i++ ){
 
-            error += ((::conj(x.M[i*p + k] - xprev.M[i*p + k]))*(x.M[i*p + k] - xprev.M[i*p + k])).real();
+            error += ((std::conj(x.M[i*p + k] - xprev.M[i*p + k]))*(x.M[i*p + k] - xprev.M[i*p + k])).real();
 
             X.M[i*p + k] = omega*x.M[i] + (1.0-omega)*X.M[i*p + k]; 
 
@@ -1591,7 +1594,7 @@ void solve_linsys1(matrix& C, matrix& X,double eps,int maxiter,double omega){
 
         for( i = 0; i < m; i++ ){
 
-            error += ((::conj(x.M[i] - xprev.M[i]))*(x.M[i] - xprev.M[i])).real();
+            error += ((std::conj(x.M[i] - xprev.M[i]))*(x.M[i] - xprev.M[i])).real();
 
             X.M[i] = omega*x.M[i] + (1.0-omega)*X.M[i];  // k takes value of only 0, p = 1, so i*p+k = i
 

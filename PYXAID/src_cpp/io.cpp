@@ -8,6 +8,10 @@
 ***********************************************************/
 
 #include "io.h"
+#include <cstdlib>
+#include <cstdio>
+using namespace std;
+
 
 int read_file(std::string filename,int verbose,vector<std::string>& A){
 /**********************************************************************
