@@ -9,6 +9,7 @@
 
 #include "wfc.h"
 
+using namespace std;
 
 //======================= MO class methods ========================
 
@@ -60,13 +61,13 @@ MO MO::conj(){
 // Return MO which is conjugate to original one
   MO res(npw);
   res.energy = energy; res.gweight = gweight; res.fweight = fweight;
-  for(int i=0;i<npw;i++){ res.coeff[i] = ::conj(coeff[i]); }
+  for(int i=0;i<npw;i++){ res.coeff[i] = std::conj(coeff[i]); }
   return res;
 }
 
 void MO::normalize(){
   double norm = 0.0;
-  for(int i=0;i<npw;i++){norm += (::conj(coeff[i]) * coeff[i] ).real();  }
+  for(int i=0;i<npw;i++){norm += (std::conj(coeff[i]) * coeff[i] ).real();  }
   norm = sqrt(1.0/norm);
   for(i=0;i<npw;i++){ coeff[i] *= norm; }
 }
@@ -82,10 +83,10 @@ void MO::complete(){
 
   // Now add remaining part
   coeff.resize(2*npw-1);
-  double norm = (::conj(coeff[0]) * coeff[0] ).real();
+  double norm = (std::conj(coeff[0]) * coeff[0] ).real();
   for(int i=1;i<npw;i++){
-    coeff[npw+i] = ::conj(coeff[i]); 
-    norm += 2.0*(::conj(coeff[i]) * coeff[i] ).real();
+    coeff[npw+i] = std::conj(coeff[i]); 
+    norm += 2.0*(std::conj(coeff[i]) * coeff[i] ).real();
   }
 
   // Update the number of the planewaves in new (completed) wfc
@@ -415,7 +416,7 @@ void wfc::compute_Hprime(int minband,int maxband,std::string filename){
 
       for(int g=0;g<g_sz;g++){
         complex<double> tmp,gx,gy,gz;
-        tmp = ( (::conj(kpts[0].mo[i].coeff[g])) * kpts[0].mo[j].coeff[g] );
+        tmp = ( (std::conj(kpts[0].mo[i].coeff[g])) * kpts[0].mo[j].coeff[g] );
         gx = scl*(grid[g][0]*b1[0] +  grid[g][1]*b2[0] +  grid[g][2]*b3[0]);
         gy = scl*(grid[g][0]*b1[1] +  grid[g][1]*b2[1] +  grid[g][2]*b3[1]);
         gz = scl*(grid[g][0]*b1[2] +  grid[g][1]*b2[2] +  grid[g][2]*b3[2]);
