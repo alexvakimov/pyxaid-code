@@ -239,6 +239,70 @@ void ElectronicStructure::update_hop_prob1(double dt,int boltz_flag, double Temp
 }
 
 
+void ElectronicStructure::update_hop_prob2(double dt,int boltz_flag, double Temp,matrix& Ef,double Eex, matrix& rates){
+/*******************************************************
+ Here we actually sum up all the transition probabilities
+
+ We use the new formula for hopping probabilities that
+ accounts for decoherence
+
+*******************************************************/
+  update_populations();
+
+  for(int i=0;i<num_states;i++){
+    double a_ii = A->M[i*num_states+i].real();
+    if (a_ii==0.0){ a_ii = 1e-12; }
+
+    double sum = 0.0;
+    for(int j=0;j<num_states;j++){
+      if(j!=i){
+
+        // In general the expression is:
+        // Pij = (2*dt/(hbar*|c_i|^2) ) * summ_j ( Im(Hij * c_i^* * c_j)  )
+        // where Hij is for TD-SE: i*hbar*dc/dt = H * c
+        // Hcurr at this moments is -i*hbar*<i|d/dt|j>
+        // Hprime* at this moment is -i*hbar*<i|p|j>, Ef will include: 2*e/m_e * A(t) * cos(omega*t)
+
+        complex<double> Hij_nac = Hcurr->M[i*num_states+j];
+        complex<double> Hij_field = Ef.M[0]*Hprimex->M[i*num_states+j] +
+                                    Ef.M[1]*Hprimey->M[i*num_states+j] +
+                                    Ef.M[2]*Hprimez->M[i*num_states+j];
+        double E_i = (Hcurr->M[i*num_states+i] + Ef.M[0]*Hprimex->M[i*num_states+i] +
+                      Ef.M[1]*Hprimex->M[i*num_states+i] +Ef.M[2]*Hprimex->M[i*num_states+i]
+                     ).real();
+        double E_j = (Hcurr->M[j*num_states+j] + Ef.M[0]*Hprimex->M[j*num_states+j] +
+                      Ef.M[1]*Hprimex->M[j*num_states+j] + Ef.M[2]*Hprimex->M[j*num_states+j]
+                     ).real();
+
+
+        // Boltzmann factor correction
+        double dE = (E_j - E_i);
+        double bf = 1.0;
+        if(dE>Eex){  bf= exp(-((dE-Eex)/(kb*Temp))); }  // hop to higher energy state is difficult - thermal equilibrium
+                                                // no such scaling for Hij_field - it is non-equilibrium process
+
+        // This is Fabiano-like expression - late splitting scheme
+        double g_ij= (2.0*dt/(a_ii*hbar))* bf * (A->M[i*num_states+j] * ( Hij_nac + Hij_field) ).imag(); // g_ij = P(i->j)
+
+        // This is new expression - early splitting scheme
+        // in my derivations: H = 
+
+
+        if(g_ij<0.0){ g_ij = 0.0; }
+
+        g[i*num_states+j] += g_ij;
+
+        sum += g_ij;
+      }// j!=i
+    }// for j
+    g[i*num_states+i] -= sum;
+  }// for i
+
+}
+
+
+
+
 
 void ElectronicStructure::rot1(double phi,int i,int j){
 /***********************************************************************

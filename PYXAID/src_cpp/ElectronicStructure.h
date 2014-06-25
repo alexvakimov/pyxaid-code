@@ -189,6 +189,8 @@ public:
   void update_populations();      // update matrix A from Ccurr
   void update_hop_prob(double dt,int is_boltz_flag,double Temp,matrix& Ef);
   void update_hop_prob1(double dt,int is_boltz_flag,double Temp,matrix& Ef,double Ex);
+  void update_hop_prob2(double dt,int is_boltz_flag,double Temp,matrix& Ef,double Ex, matrix&);
+
   void init_hop_prob1(); 
 
   void check_decoherence(double dt,int boltz_flag,double Temp,matrix& rates); // practically DISH correction

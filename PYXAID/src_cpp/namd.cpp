@@ -10,6 +10,7 @@
 #include "namd.h"
 #include "aux.h"
 #include "io.h"
+#include "random.h"
 
 /*****************************************************************
   Functions implemented in this file:
@@ -292,19 +293,31 @@ void propagate_electronic(InputStructure& is,vector<ElectronicStructure>& es,int
   
 
   // Propagate coefficients of all adiabatic states
+  //============= Here we are going to support mostly integrator==0 ===========
+  // May be missing some features for integrator != 0
+
   if(is.integrator==0){
     for(int j=0;j<nel;j++){ 
       tim = (i*is.nucl_dt + j*is.elec_dt);
+      // Compute field
       Efield(is,tim,Ef,Eex);
-      if(is.decoherence==5){ 
-        es[i].propagate_coefficients( is.elec_dt,Ef,rates);
-      }
+
+      // Propagate coefficients
+      if(is.decoherence==5){   es[i].propagate_coefficients( is.elec_dt,Ef,rates);      } // CPF
+      else{     es[i].propagate_coefficients( is.elec_dt,Ef );       }
+
+      // Update time
+      es[i].t_m[0] += is.elec_dt; 
+
+      // Update hopping probabilities
+      if(is.decoherence==6){ es[i].update_hop_prob2(is.elec_dt,is.boltz_flag,is.Temp,Ef,Eex,rates);  }// projected trajectories.  We call not the overloaded version update_hop_prob1, but different formula for computing hopping probabilities
       else{
-        es[i].propagate_coefficients( is.elec_dt,Ef ); 
+        es[i].update_hop_prob1(is.elec_dt,is.boltz_flag,is.Temp,Ef,Eex);
       }
-      es[i].update_hop_prob1(is.elec_dt,is.boltz_flag,is.Temp,Ef,Eex);
-    }
+
+    }// for j
   }
+
   else if(is.integrator==10){
     // 3 ways to approximate slope of the H matrix
     if(i==0){  *es[i].dHdt = (*es[i+1].Hcurr - *es[i].Hcurr)/is.nucl_dt ; }
@@ -810,9 +823,46 @@ void run_namd1(InputStructure& is, vector<ElectronicStructure>& me_es,vector<me_
 */
     }//is.decoherence == 4
 
-    if(is.decoherence==5){ // "purostat"
+    if(is.decoherence==5){ // Coherence Penalty Functional
      // add nothing special here
     }
+    
+    if(is.decoherence==6){
+    // nothing special:  Reserved for FSSH with wfc collapse - which works fine for ECWR
+    }
+
+    if(is.decoherence==7){ // Here goes the NAC scaling that is based on FT and FC factors
+/*
+      std::string filename = is.scratch_dir+"/scaling_factors_icond"+int2string(icond)+".txt";
+      ofstream out(filename.c_str(),ios::out);
+
+      for(int t=0;t<sz;t++){
+
+        out<<"t= "<<t<<"  ";
+        // Scale Hamiltonian (off-diagonal elements)
+        for(int i=0;i<nst;i++){
+          for(int j=0;j<nst;j++){
+            if(i!=j){
+              double tau = 1000.0; // 1 ps
+              if(rates.M[i*nst+j].real()>0.0){
+                tau = (1.0/rates.M[i*nst+j].real());
+              }
+              int wind = tau/is.nucl_dt;
+
+              me_es[t].Hcurr->M[i*nst+j] *= F;  // scale NAC
+              me_es[t].Hprev->M[i*nst+j] *= F;  // scale NAC
+              me_es[t].Hnext->M[i*nst+j] *= F;  // scale NAC
+
+              out<<" dE("<<i<<","<<j<<")= "<<dEij<<" F= "<<F<<" ";
+            }// i!=j
+          }// for j
+        }// for i
+        out<<endl;
+      }// for t
+      out.close();
+
+*/
+    }// decoherence==7
 
   }// decoherence > 0
 
@@ -839,6 +889,8 @@ void run_namd1(InputStructure& is, vector<ElectronicStructure>& me_es,vector<me_
   for(n=0;n<is.num_sh_traj;n++){
 
     me_es[0].set_state(init_state);
+    me_es[0].t_m[0] = 0.0; // Time since last hop
+
     // Loop over time
     for(i=0;i<sz;i++){
 
@@ -849,7 +901,8 @@ void run_namd1(InputStructure& is, vector<ElectronicStructure>& me_es,vector<me_
       // Solve TD-SE for i-th time step
       me_es[i].init_hop_prob1();
       propagate_electronic(is,me_es,i,rates);    // update_hop_prob -is called in there 
-                                                 // rates are only used iff decoherence==5
+                                                 // rates are only used if decoherence==5 or decoherence==6
+                                                            
 
       // Calculate the probabilities off all states and hopping probabilities
       me_es[i].update_populations();
@@ -870,6 +923,27 @@ void run_namd1(InputStructure& is, vector<ElectronicStructure>& me_es,vector<me_
         curr_state = me_es[i].curr_state;
 
       }// decoherence == 2
+      else if(is.decoherence==5){  // CPF
+       // Nothing to do here, because it is MF theory
+      }
+      else if(is.decoherence==6){  // 
+        int st_before = me_es[i].curr_state;
+
+        hop(me_es[i].g,me_es[i].curr_state,nst);
+
+        curr_state = me_es[i].curr_state;
+        // Collapse WFC
+
+        if(st_before!=curr_state){ // Hop has happened - collapse wfc
+
+          me_es[i].t_m[0] = 0.0;
+
+          double argg = M_PI*uniform(-1.0,1.0);
+          *me_es[i].Ccurr  = 0.0;
+           me_es[i].Ccurr->M[curr_state] = complex<double>( cos(argg), sin(argg) );          
+        }
+
+      }// is.decoherence==6
 
 /*  Debug
         cout<<"hop_matrix:\n";
