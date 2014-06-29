@@ -1,0 +1,31 @@
+
+     Program PW_EXPORT v.5.1 starts on 29Jun2014 at 16:34:36 
+
+     This program is part of the open-source Quantum ESPRESSO suite
+     for quantum simulation of materials; please cite
+         "P. Giannozzi et al., J. Phys.:Condens. Matter 21 395502 (2009);
+          URL http://www.quantum-espresso.org", 
+     in publications or presentations arising from this work. More details at
+     http://www.quantum-espresso.org/quote
+
+     Parallel version (MPI), running on     1 processors
+
+   Info: using nr1, nr2, nr3 values from input
+
+   Info: using nr1s, nr2s, nr3s values from input
+
+     IMPORTANT: XC functional enforced from input :
+     Exchange-correlation      = REVPBE ( 1  4  4  4 0)
+     Any further DFT definition will be discarded
+     Please, verify this is what you really want
+
+
+     G-vector sticks info
+     --------------------
+     sticks:   dense  smooth     PW     G-vecs:    dense   smooth      PW
+     Sum        3397    3397    853               149781   149781   18805
+     Tot        1699    1699    427
+
+     Generating pointlists ...
+     new r_m :   0.4125 (alat units)  0.7796 (a.u.) for type    1
+     new r_m :   0.4125 (alat units)  0.7796 (a.u.) for type    2

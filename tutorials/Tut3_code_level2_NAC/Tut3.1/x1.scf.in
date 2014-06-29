@@ -1,0 +1,50 @@
+&CONTROL
+  calculation = 'scf',
+  pseudo_dir = '/software/group/oprezhdo_group/QE_PP/revpbe/PSEUDOPOTENTIALS_NC/',
+  outdir = './',
+  prefix = 'x1',
+  disk_io = 'low',
+/
+
+&SYSTEM
+  ibrav = 0,
+  celldm(1) = 1.89,
+  nat = 2,
+  ntyp = 2,
+  nspin = 2,
+  nbnd = 10,
+  ecutwfc = 30,
+  tot_charge = 0.0,
+  starting_magnetization(1) = 0.01
+  occupations = 'smearing',
+  smearing = 'gaussian',
+  degauss = 0.005,
+  nosym = .true.,
+
+/
+
+&ELECTRONS
+  electron_maxstep = 300,
+  conv_thr = 1.D-5,
+  mixing_beta = 0.45,
+/
+
+
+
+ATOMIC_SPECIES
+ C  12.01  C.revpbe-nc.UPF
+ H  1.008  H.revpbe-n-nc.UPF
+
+
+K_POINTS gamma                  
+                               
+CELL_PARAMETERS (alat)
+    10.0000000    0.0000000    0.0000000
+     0.0000000   10.0000000    0.0000000
+     0.0000000    0.0000000   10.0000000
+ 
+
+ATOMIC_POSITIONS (alat)
+C    0.0000000   0.0000000  0.0000000
+H    1.4000000   0.0000000  0.0000000
+
