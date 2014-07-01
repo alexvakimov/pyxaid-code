@@ -1,0 +1,10 @@
+&inputpp
+  prefix = 'x0',
+  outdir = './',
+  pseudo_dir = ''/software/group/oprezhdo_group/QE_PP/revpbe/PSEUDOPOTENTIALS_NC/',
+  psfile(1) = 'C.revpbe-nc.UPF',
+  psfile(2) = 'H.revpbe-n-nc.UPF',
+  single_file = .FALSE.,
+  ascii = .TRUE.,
+  uspp_spsi = .FALSE.,
+/

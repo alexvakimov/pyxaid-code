@@ -1,0 +1,14 @@
+#!/bin/bash
+#SBATCH -A exciton
+#SBATCH -p exciton
+#SBATCH -N 2
+#SBATCH -n 12
+#SBATCH --mem-per-cpu=1000
+#SBATCH -t 20:00:00
+#SBATCH -J qespresso
+#SBATCH -e err_%j
+#SBATCH -o out_%j
+
+exe_qespresso=/software/group/oprezhdo_group/espresso-5.1/bin/pw.x
+srun $exe_qespresso < x.md.in > x.md.out
+

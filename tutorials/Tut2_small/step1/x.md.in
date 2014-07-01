@@ -1,0 +1,61 @@
+&CONTROL
+  calculation = 'md',
+  dt = 20.67055,
+  nstep = 50,
+  pseudo_dir = '/software/group/oprezhdo_group/QE_PP/revpbe/PSEUDOPOTENTIALS_NC/',
+  outdir = './',
+  prefix = 'x',
+  disk_io = 'low',
+/
+
+&SYSTEM
+  ibrav = 0,
+  celldm(1) = 24.08,
+  nat = 6,
+  ntyp = 2,
+  nspin = 1,
+  nbnd = 20,
+  ecutwfc = 30,
+  tot_charge = 0.0,
+  occupations = 'smearing',
+  smearing = 'gaussian',
+  degauss = 0.005,
+  nosym = .true.,
+
+/
+
+&ELECTRONS
+  electron_maxstep = 300,
+  conv_thr = 1.D-5,
+  mixing_beta = 0.45,
+/
+
+&IONS
+  ion_dynamics = 'verlet',
+  ion_temperature = 'andersen',
+  tempw = 300.00 ,
+  nraise = 1,
+/
+
+
+ATOMIC_SPECIES
+ C  12.01  C.revpbe-nc.UPF
+ H  1.008  H.revpbe-n-nc.UPF
+
+
+K_POINTS gamma                  
+                               
+CELL_PARAMETERS
+     1.0000000    0.0000000    0.0000000
+     0.0000000    1.0000000    0.0000000
+     0.0000000    0.0000000    1.0000000
+ 
+ATOMIC_POSITIONS (alat)
+ C    -0.2024635    0.0053751    0.0000000
+ H    -0.1606224   -0.0674284    0.0000000
+ H    -0.2864339    0.0053751    0.0000000
+ C    -0.1494700    0.0975838    0.0000000
+ H    -0.1913111    0.1703873    0.0000000
+ H    -0.0654996    0.0975838    0.0000000
+
+
