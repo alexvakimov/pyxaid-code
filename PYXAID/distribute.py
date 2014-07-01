@@ -58,8 +58,11 @@ def distribute(Nmin,Nmax,max_steps,submit_templ,exp_files,prefixes,do_submit):
 # It also starts the job in a given directory
 # exp_files - is a list of the input files for export
 # prefixes - is a list of prefixes of the files to be distributed
-# do_submit - a flag to choose if we actually want to submit the jobs (do_submit==1)
+# do_submit - a flag to choose if we actually want to submit the jobs (do_submit==1 || ==2)
 #            or only distribute the files (otherwise)
+# do_submit == 0 - only discribute files, no actual execution
+# do_submit == 1 - distribute and submit using PBS
+# do_submit == 2 - distribute and submit using SLURM
 
     j = 0  # job index
     Nstart = 0
@@ -80,6 +83,10 @@ def distribute(Nmin,Nmax,max_steps,submit_templ,exp_files,prefixes,do_submit):
         if do_submit==1:
             os.system("qsub %s" % submit_templ)
             time.sleep(10)
+        elif do_submit==2:
+            os.system("sbatch %s" % submit_templ)
+            time.sleep(10)
+
         os.chdir("../")
         j = j + 1
 
@@ -93,6 +100,10 @@ def distribute(Nmin,Nmax,max_steps,submit_templ,exp_files,prefixes,do_submit):
     if do_submit==1:
         os.system("qsub %s" % submit_templ)    
         time.sleep(10)  # we need to wait some time before submitting a new job - to make sure the memory is available
+    elif do_submit==2:
+        os.system("sbatch %s" % submit_templ)
+        time.sleep(10)
+
     os.chdir("../")
 
 # Example of usage
