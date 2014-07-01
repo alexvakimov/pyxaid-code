@@ -4,6 +4,7 @@
   outdir = './',
   prefix = 'x0',
   disk_io = 'low',
+  wf_collect = .true.
 /
 
 &SYSTEM
