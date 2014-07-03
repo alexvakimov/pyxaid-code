@@ -56,8 +56,13 @@ void regression(vector<double>& X,vector<double>& Y,int opt,double& a,double& b)
 
   int sz = X.size();
   double x,y,xy,x2,y2,N;
+  // Initialization
+  x = 0.0;  y = 0.0;
+  x2 = 0.0; y2 = 0.0; xy = 0.0;
 
+//  cout<<"In Regress:\n";  
   for(int i=0;i<sz;i++){
+//    cout<<i<<"  "<<X[i]<<"  "<<Y[i]<<endl;
     x += X[i];
     y += Y[i];
     if(opt==1){
@@ -66,9 +71,12 @@ void regression(vector<double>& X,vector<double>& Y,int opt,double& a,double& b)
       xy += X[i]*Y[i];
     }
   }
-  
-  if(opt==0){ a = 0.0; b = y/x; }
+
+  if(opt==0){ a = 0.0; b = (y/x); }
   else if (opt==1){ N = sz; b = (N*xy - x*y)/(N*x2 - x*x); a = (y - b*x)/N; }
+
+//  cout<<"In Regress:  y= "<<y<<"  x= "<<x<<" a= "<<a<<"  b= "<<b<<endl;
+
 
 }
 
@@ -150,11 +158,15 @@ double decoherence_rates(vector<double>& x,double dt,std::string rt_dir,int regr
   // => exp(-IIC) > eps => IIC < - ln(eps)
   // If eps = 0.1 => -ln(eps) = 2.3
   //    eps = 0.01 => -ln(eps) = 4.6
+  int first = 1;  // this is correction to avoid recurrences!
   for(t=0;t<sz;t++){
-    if(IIC[t]<2.3){ 
-      T.push_back(t*t*dt*dt); 
-      selIIC.push_back(IIC[t]); // sel - selected
+    if(first){
+      if(IIC[t]<2.3){ 
+        T.push_back(t*t*dt*dt); 
+        selIIC.push_back(IIC[t]); // sel - selected
+      }else{ first = 0; }
     }
+    else{ ; ;}
   }
   
   // Do linear regression
