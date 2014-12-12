@@ -6,9 +6,12 @@
  * License, or (at your option) any later version.
  * http://www.gnu.org/copyleft/gpl.txt
 ***********************************************************/
-
+#include <iostream>
+#include <iomanip>
 #include "InputStructure.h"
 #include "units.h"
+
+using namespace std;
 
 //================= Class InputStructure ==========================
 
