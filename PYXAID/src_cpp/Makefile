@@ -10,8 +10,10 @@ CPP=c++
 
 # BLUEHIVE 2
 # v 1.55.0
-p1=/software/boost/1.55.0/b2/include
-pl1=/software/boost/1.55.0/b2/lib
+#p1=/software/boost/1.55.0/b2/include
+#pl1=/software/boost/1.55.0/b2/lib
+p1=/usr/usc/boost/1.55.0/include/boost
+pl1=/usr/usc/boost/1.55.0/lib
 
 
 # PYTHON
@@ -24,8 +26,10 @@ pl1=/software/boost/1.55.0/b2/lib
 # 
 # BLUEHIVE 2
 # v 2.7.6
-p2=/software/python/2.7.6/include/python2.7
-pl2=/software/python/2.7.6/lib
+#p2=/software/python/2.7.6/include/python2.7
+#pl2=/software/python/2.7.6/lib
+p2=/usr/usc/python/2.7.8/include/python2.7
+pl2=/usr/usc/python/2.7.8/lib
 
 
 I=-I ${p1} -I ${p2}

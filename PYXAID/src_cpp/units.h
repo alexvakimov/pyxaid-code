@@ -13,6 +13,7 @@
 #define hbar 0.658218 // units eV * fs
 #define kb   8.617e-5 // units = eV/K
 #define Ry_to_eV 13.60569253  // 1 Ry = Ry_to_eV eV
+#define Ha_to_eV 27.211396    // 1 Ha = Ha_to_eV eV
 
 
 #endif
