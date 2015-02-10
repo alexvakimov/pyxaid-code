@@ -1,0 +1,54 @@
+&CONTROL
+  calculation = 'scf',
+  pseudo_dir = '/home/rcf-proj2/op/akimov/QE_PP/PSEUDOPOTENTIALS/',
+  outdir = './',
+  prefix = 'x0',
+  disk_io = 'low',
+  wf_collect = .true.
+/
+
+&SYSTEM
+  ibrav = 0,
+  celldm(1) = 24.08,
+  nat = 6,
+  ntyp = 2,
+  nspin = 2,
+  nbnd = 20,
+  ecutwfc = 30,
+  tot_charge = 0.0,
+  starting_magnetization(1) = 0.01
+  occupations = 'smearing',
+  smearing = 'gaussian',
+  degauss = 0.005,
+  nosym = .true.,
+
+/
+
+&ELECTRONS
+  electron_maxstep = 300,
+  conv_thr = 1.D-5,
+  mixing_beta = 0.45,
+/
+
+&IONS
+  ion_dynamics = 'verlet',
+  ion_temperature = 'andersen',
+  tempw = 300.00 ,
+  nraise = 1,
+/
+
+
+ATOMIC_SPECIES
+ C  12.01  C.pbe-n-rrkjus_psl.0.1.UPF
+ H  1.008  H.pbe-rrkjus_psl.0.1.UPF 
+
+
+K_POINTS gamma                  
+                               
+CELL_PARAMETERS
+     1.0000000    0.0000000    0.0000000
+     0.0000000    1.0000000    0.0000000
+     0.0000000    0.0000000    1.0000000
+ 
+
+
