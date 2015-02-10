@@ -143,7 +143,7 @@ def calculate(energy_prefix,energy_suffix,dip_prefix,dip_suffix,isnap,fsnap,opt,
 
 
           
-    return 1
+    return [exE, exI]
 
 
 # Example of usage
