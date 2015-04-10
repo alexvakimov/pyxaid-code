@@ -169,13 +169,16 @@ void ElectronicStructure::init_hop_prob1(){
   }// for i
 }
 
-void ElectronicStructure::update_hop_prob1(double dt,int boltz_flag, double Temp,matrix& Ef,double Eex){
+void ElectronicStructure::update_hop_prob_fssh(double dt,int boltz_flag, double Temp,matrix& Ef,double Eex, matrix& rates){
 /*******************************************************
  Here we actually sum up all the transition probabilities
 *******************************************************/
   update_populations();
 
-  //Ef = 0.0; // test!!!
+  // Compute effective Hamiltonian
+  matrix* Heff; Heff = new matrix(num_states,num_states);
+  *Heff = *Hcurr + ( Ef.M[0] * (*Hprimex) + Ef.M[1] * (*Hprimey) + Ef.M[2] * (*Hprimez));
+
 
   for(int i=0;i<num_states;i++){
     double a_ii = A->M[i*num_states+i].real();
@@ -190,113 +193,156 @@ void ElectronicStructure::update_hop_prob1(double dt,int boltz_flag, double Temp
         // Hcurr at this moments is -i*hbar*<i|d/dt|j>
         // Hprime* at this moment is -i*hbar*<i|p|j>, Ef will include: 2*e/m_e * A(t) * cos(omega*t)
 
-        // warning!!!: Before 4/15/2013 there was "-" sign in the line below
-        complex<double> Hij_nac = Hcurr->M[i*num_states+j];
-        complex<double> Hij_field = Ef.M[0]*Hprimex->M[i*num_states+j] +
-                                    Ef.M[1]*Hprimey->M[i*num_states+j] +
-                                    Ef.M[2]*Hprimez->M[i*num_states+j];
-        double E_i = (Hcurr->M[i*num_states+i] +
-                      Ef.M[0]*Hprimex->M[i*num_states+i] +
-                      Ef.M[1]*Hprimex->M[i*num_states+i] +
-                      Ef.M[2]*Hprimex->M[i*num_states+i]
-                     ).real();
-        double E_j = (Hcurr->M[j*num_states+j] +
-                      Ef.M[0]*Hprimex->M[j*num_states+j] +
-                      Ef.M[1]*Hprimex->M[j*num_states+j] +
-                      Ef.M[2]*Hprimex->M[j*num_states+j]
-                     ).real();
+        g[i*num_states+j] = (2.0*dt/(a_ii*hbar))*(A->M[i*num_states+j] * Heff->M[i*num_states+j]).imag(); // g_ij = P(i->j)
 
+        if(g[i*num_states+j]<0.0){ g[i*num_states+j] = 0.0; }
 
-//        double g_ij= (2.0*dt/(a_ii*hbar))*(A->M[i*num_states+j] * Hij ).imag(); // g_ij = P(i->j)
+       //------------------- Boltzmann factor -------------------
+       double E_i = Heff->M[i*num_states+i].real();
+       double E_j = Heff->M[j*num_states+j].real();
+       double dE = (E_j - E_i);
+       double bf = 1.0;
+       if(dE>Eex){  bf= exp(-((dE-Eex)/(kb*Temp))); }  // hop to higher energy state is difficult - thermal equilibrium
+                                                       // no such scaling for Hij_field - it is non-equilibrium process
 
-        double dE = (E_j - E_i);
-        double bf = 1.0;
-        if(dE>Eex){  bf= exp(-((dE-Eex)/(kb*Temp))); }  // hop to higher energy state is difficult - thermal equilibrium
-                                                // no such scaling for Hij_field - it is non-equilibrium process
+       //------------------- Together ---------------------------      
+        g[i*num_states+j] *= bf;
 
-        double g_ij= (2.0*dt/(a_ii*hbar))*(A->M[i*num_states+j] * bf * (  Hij_nac + Hij_field) ).imag(); // g_ij = P(i->j)
-
-//        if(i==0 && j==1) { cout<<"nac = "<<Hij_nac<<" field = "<<Hij_field<<endl; }
-
-        if(g_ij<0.0){ g_ij = 0.0; }
-
-/*
-  boltz_flag is now to be deprecated - because it is necessary - to satisfy the detailed balance
-        if(g_ij<0.0){ g_ij = 0.0; }
-        if(boltz_flag==1){
-          double dE = (E_j - E_i);
-          if(dE>0){  g_ij *= exp(-(dE/(kb*Temp))); }  // hop to higher energy state is difficult - thermal equilibrium
-        }
-*/
-        g[i*num_states+j] += g_ij;
-
-        sum += g_ij;
+        sum += g[i*num_states+j];
       }// j!=i
     }// for j
     g[i*num_states+i] -= sum;
   }// for i
 
+
+  delete Heff;
 }
 
 
-void ElectronicStructure::update_hop_prob2(double dt,int boltz_flag, double Temp,matrix& Ef,double Eex, matrix& rates){
+
+void ElectronicStructure::update_hop_prob_mssh(double dt,int boltz_flag, double Temp,matrix& Ef,double Eex, matrix& rates){
 /*******************************************************
- Here we actually sum up all the transition probabilities
-
- We use the new formula for hopping probabilities that
- accounts for decoherence
-
+  Here we actually sum up all the transition probabilities
 *******************************************************/
   update_populations();
 
-  for(int i=0;i<num_states;i++){
-    double a_ii = A->M[i*num_states+i].real();
-    if (a_ii==0.0){ a_ii = 1e-12; }
+  matrix* Heff; Heff = new matrix(num_states,num_states);
+  *Heff = *Hcurr + ( Ef.M[0] * (*Hprimex) + Ef.M[1] * (*Hprimey) + Ef.M[2] * (*Hprimez));
 
+  for(int i=0;i<num_states;i++){
     double sum = 0.0;
     for(int j=0;j<num_states;j++){
       if(j!=i){
+        g[i*num_states+j] = A->M[j*num_states+j].real(); // g_ij = P(i->j)
 
-        // In general the expression is:
-        // Pij = (2*dt/(hbar*|c_i|^2) ) * summ_j ( Im(Hij * c_i^* * c_j)  )
-        // where Hij is for TD-SE: i*hbar*dc/dt = H * c
-        // Hcurr at this moments is -i*hbar*<i|d/dt|j>
-        // Hprime* at this moment is -i*hbar*<i|p|j>, Ef will include: 2*e/m_e * A(t) * cos(omega*t)
+        if(g[i*num_states+j]<0.0){ g[i*num_states+j] = 0.0; }
 
-        complex<double> Hij_nac = Hcurr->M[i*num_states+j];
-        complex<double> Hij_field = Ef.M[0]*Hprimex->M[i*num_states+j] +
-                                    Ef.M[1]*Hprimey->M[i*num_states+j] +
-                                    Ef.M[2]*Hprimez->M[i*num_states+j];
-        double E_i = (Hcurr->M[i*num_states+i] + Ef.M[0]*Hprimex->M[i*num_states+i] +
-                      Ef.M[1]*Hprimex->M[i*num_states+i] +Ef.M[2]*Hprimex->M[i*num_states+i]
-                     ).real();
-        double E_j = (Hcurr->M[j*num_states+j] + Ef.M[0]*Hprimex->M[j*num_states+j] +
-                      Ef.M[1]*Hprimex->M[j*num_states+j] + Ef.M[2]*Hprimex->M[j*num_states+j]
-                     ).real();
+       //------------------- Boltzmann factor -------------------
+       double E_i = Heff->M[i*num_states+i].real();
+       double E_j = Heff->M[j*num_states+j].real();
+       double dE = (E_j - E_i);
+       double bf = 1.0;
+       if(dE>Eex){  bf= exp(-((dE-Eex)/(kb*Temp))); }  // hop to higher energy state is difficult - thermal equilibrium
+                                                       // no such scaling for Hij_field - it is non-equilibrium process
 
+       //------------------- Together ---------------------------
+        g[i*num_states+j] *= bf;
+
+        sum += g[i*num_states+j];
+      }// j!=i
+    }// for j
+    g[i*num_states+i] -= sum;
+  }// for i
+
+  delete Heff;
+
+}
+
+       
+
+
+void ElectronicStructure::update_hop_prob_gfsh(double dt,int boltz_flag, double Temp,matrix& Ef,double Eex, matrix& rates){
+/*******************************************************
+ Here we actually sum up all the transition probabilities
+*******************************************************/
+  int i,j;
+  update_populations();
+
+  complex<double> one(0.0,1.0);
+
+  // Compute effective Hamiltonian
+  matrix* Heff; Heff = new matrix(num_states,num_states);
+  matrix* C_dot; C_dot = new matrix(num_states,1);
+  *Heff = *Hcurr + ( Ef.M[0] * (*Hprimex) + Ef.M[1] * (*Hprimey) + Ef.M[2] * (*Hprimez));
+
+  *C_dot = -one * (*Heff * *Ccurr);  // assume hbar = 1
+
+  matrix* A_dot; A_dot = new matrix(num_states,num_states);
+  *A_dot = (*C_dot).conj() * *Ccurr + *C_dot * (*Ccurr).conj();  // this should be real matrix
+
+
+  vector<double> a_dot(num_states,0.0);
+  vector<double> a(num_states,0.0);
+  double norm = 0.0;
+
+  for(i=0;i<num_states;i++){  
+    a_dot[i] = A_dot->M[i*num_states+i].real();
+    if(a_dot[i]<0.0){ norm += a_dot[i]; }
+
+    a[i] = A->M[i*num_states+i].real();
+  }
+  
+
+  // Now calculate the hopping probabilities
+  for(i=0;i<num_states;i++){       
+    double sumg = 0.0;
+
+    for(j=0;j<num_states;j++){
+ 
+      if(j!=i){  // off-diagonal = probabilities to hop to other states
+
+        //--------------------- Surface hopping algorithms probabilities --------------
+        if(a[i]<1e-12){  g[i*num_states+j] = 0.0; }  // since the initial population is almost zero, so no need for hops
+        else{
+          g[i*num_states+j] = dt*(a_dot[j]/a[i]) * a_dot[i] / norm;  
+                                              
+          if(g[i*num_states+j]<0.0){  // since norm is negative, than this condition means that a_dot[i] and a_dot[j] have same signs
+                                      // which is bad - so no transitions are assigned
+            g[i*num_states+j] = 0.0;
+          }
+          else{  // here we have opposite signs of a_dot[i] and a_dot[j], but this is not enough yet
+            if(a_dot[i]<0.0 & a_dot[j]>0.0){ ;; } // this is out transition probability, but it is already computed
+              else{  g[i*num_states+j] = 0.0; } // wrong transition
+          }
+        }// a[i]>1e-12
+
+
+
+       //------------------- Boltzmann factor -------------------
+        double E_i = Heff->M[i*num_states+i].real();
+        double E_j = Heff->M[j*num_states+j].real();
 
         // Boltzmann factor correction
         double dE = (E_j - E_i);
         double bf = 1.0;
         if(dE>Eex){  bf= exp(-((dE-Eex)/(kb*Temp))); }  // hop to higher energy state is difficult - thermal equilibrium
-                                                // no such scaling for Hij_field - it is non-equilibrium process
+                                                        // no such scaling for Hij_field - it is non-equilibrium process
 
-        // This is Fabiano-like expression - late splitting scheme
-        double g_ij= (2.0*dt/(a_ii*hbar))* bf * (A->M[i*num_states+j] * ( Hij_nac + Hij_field) ).imag(); // g_ij = P(i->j)
-
-        // This is new expression - early splitting scheme
-        // in my derivations: H = 
+       //------------------- Together ---------------------------       
+        g[i*num_states+j] *= bf;
 
 
-        if(g_ij<0.0){ g_ij = 0.0; }
-
-        g[i*num_states+j] += g_ij;
-
-        sum += g_ij;
-      }// j!=i
+        sumg += g[i*num_states+j];
+      }
     }// for j
-    g[i*num_states+i] -= sum;
+
+    g[i*num_states+i] -= sumg;  // probability to stay in state i
   }// for i
+
+
+  delete Heff;
+  delete A_dot;
+  delete C_dot;
 
 }
 

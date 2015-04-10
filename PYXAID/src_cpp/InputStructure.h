@@ -57,6 +57,7 @@ public:
   double nucl_dt;   int is_nucl_dt;        // nuclear time step in fs
   double elec_dt;   int is_elec_dt;        // electronic time step in fs
   int namdtime;     int is_namdtime;
+  int sh_algo;      int is_sh_algo;        // surface hopping algorithm: 0 = FSSH, 1 = GFSH, 2 = MSSH
   int num_sh_traj;  int is_num_sh_traj;
   int boltz_flag;   int is_boltz_flag;
   double Temp;      int is_Temp;           // Temperature

@@ -26,7 +26,7 @@ void InputStructure::init(){
   // Variables are not defined
   is_read_couplings =
 //  is_many_electron_algorithm =
-  is_namdtime = is_num_sh_traj =
+  is_namdtime = is_sh_algo = is_num_sh_traj =
   is_boltz_flag = is_debug_flag = is_Temp =
   is_nucl_dt = is_elec_dt = is_integrator =
   is_runtype = 
@@ -76,6 +76,7 @@ void InputStructure::echo(){
   if(is_read_overlaps){ cout<<"read_overlaps = "<<read_overlaps<<endl; }
 //  if(is_many_electron_algorithm){ cout<<"many_electron_algorithm = "<<many_electron_algorithm<<endl; }
   if(is_namdtime){ cout<<"namdtime = "<<namdtime<<endl; }
+  if(is_sh_algo){ cout<<"sh_algo = "<<sh_algo<<endl; }
   if(is_num_sh_traj){ cout<<"num_sh_traj = "<<num_sh_traj<<endl; }
   if(is_boltz_flag){ cout<<"boltz_flag = "<<boltz_flag<<endl; }
   if(is_debug_flag){ cout<<"debug_flag = "<<debug_flag<<endl; }
@@ -133,6 +134,7 @@ void InputStructure::set_default(){
   if(!is_read_overlaps){ warning("read_overlaps","online"); read_overlaps = "online"; is_read_overlaps = 1; wrn_status++; }
   //if(!is_many_electron_algorithm){ warning("many_electron_algorithm","0"); many_electron_algorithm=0; is_many_electron_algorithm=1; wrn_status++; }
   if(!is_namdtime){ warning("namdtime","0"); namdtime = 0; is_namdtime = 1; wrn_status++; }
+  if(!is_sh_algo){ warning("sh_algo","0"); sh_algo = 0; is_sh_algo = 1; wrn_status++; }
   if(!is_num_sh_traj){ warning("num_sh_traj","1"); num_sh_traj = 1; is_num_sh_traj = 1; wrn_status++; }
   if(!is_boltz_flag){ warning("boltz_flag","1"); boltz_flag=1; is_boltz_flag = 1; wrn_status++; }
   if(!is_debug_flag){ warning("debug_flag","0"); debug_flag=0; is_debug_flag = 1; wrn_status++; }
@@ -202,6 +204,7 @@ InputStructure::InputStructure(boost::python::dict params){
     else if(s1=="read_overlaps") { read_overlaps = extract<std::string>(params[s1]); is_read_overlaps = 1; }
 //    else if(s1=="many_electron_algorithm"){ many_electron_algorithm = extract<int>(params[s1]); is_many_electron_algorithm = 1; }
     else if(s1=="namdtime"){ namdtime = extract<int>(params[s1]); is_namdtime = 1; }
+    else if(s1=="sh_algo"){ sh_algo = extract<int>(params[s1]); is_sh_algo = 1; }
     else if(s1=="num_sh_traj"){ num_sh_traj = extract<int>(params[s1]); is_num_sh_traj = 1; }
     else if(s1=="boltz_flag"){ boltz_flag = extract<int>(params[s1]); is_boltz_flag = 1; }
     else if(s1=="debug_flag"){ debug_flag = extract<int>(params[s1]); is_debug_flag = 1; }

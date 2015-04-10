@@ -316,16 +316,16 @@ void propagate_electronic(InputStructure& is,vector<ElectronicStructure>& es,int
 
       // Propagate coefficients
       if(is.decoherence==5){   es[i].propagate_coefficients( is.elec_dt,Ef,rates);      } // CPF
-      else{     es[i].propagate_coefficients( is.elec_dt,Ef );       }
+      else{                    es[i].propagate_coefficients( is.elec_dt,Ef );       }
 
       // Update time
       es[i].t_m[0] += is.elec_dt; 
 
       // Update hopping probabilities
-      if(is.decoherence==6){ es[i].update_hop_prob2(is.elec_dt,is.boltz_flag,is.Temp,Ef,Eex,rates);  }// projected trajectories.  We call not the overloaded version update_hop_prob1, but different formula for computing hopping probabilities
-      else{
-        es[i].update_hop_prob1(is.elec_dt,is.boltz_flag,is.Temp,Ef,Eex);
-      }
+      if(is.sh_algo==0){ es[i].update_hop_prob_fssh(is.elec_dt,is.boltz_flag,is.Temp,Ef,Eex,rates);  }
+      else if(is.sh_algo==1){  es[i].update_hop_prob_gfsh(is.elec_dt,is.boltz_flag,is.Temp,Ef,Eex,rates);  }
+      else if(is.sh_algo==2){  es[i].update_hop_prob_mssh(is.elec_dt,is.boltz_flag,is.Temp,Ef,Eex,rates);  }
+
 
     }// for j
   }
@@ -341,7 +341,12 @@ void propagate_electronic(InputStructure& is,vector<ElectronicStructure>& es,int
       tim = (i*is.nucl_dt + j*is.elec_dt);
       Efield(is,tim,Ef,Eex);
       es[i].propagate_coefficients1(is.elec_dt,opt,Ef);
-      es[i].update_hop_prob1(is.elec_dt,is.boltz_flag,is.Temp,Ef,Eex);
+
+      // Update hopping probabilities
+      if(is.sh_algo==0){ es[i].update_hop_prob_fssh(is.elec_dt,is.boltz_flag,is.Temp,Ef,Eex,rates);  }
+      else if(is.sh_algo==1){  es[i].update_hop_prob_gfsh(is.elec_dt,is.boltz_flag,is.Temp,Ef,Eex,rates);  }
+      else if(is.sh_algo==2){  es[i].update_hop_prob_mssh(is.elec_dt,is.boltz_flag,is.Temp,Ef,Eex,rates);  }
+                         
     }
   }
   else if(is.integrator==11){
@@ -354,7 +359,12 @@ void propagate_electronic(InputStructure& is,vector<ElectronicStructure>& es,int
       tim = (i*is.nucl_dt + j*is.elec_dt);
       Efield(is,tim,Ef,Eex);
       es[i].propagate_coefficients1(is.elec_dt,opt,Ef);
-      es[i].update_hop_prob1(is.elec_dt,is.boltz_flag,is.Temp,Ef,Eex);
+
+      // Update hopping probabilities 
+      if(is.sh_algo==0){ es[i].update_hop_prob_fssh(is.elec_dt,is.boltz_flag,is.Temp,Ef,Eex,rates);  }
+      else if(is.sh_algo==1){  es[i].update_hop_prob_gfsh(is.elec_dt,is.boltz_flag,is.Temp,Ef,Eex,rates);  }
+      else if(is.sh_algo==2){  es[i].update_hop_prob_mssh(is.elec_dt,is.boltz_flag,is.Temp,Ef,Eex,rates);  }
+
     }
   }
   else if(is.integrator==2){
@@ -362,7 +372,12 @@ void propagate_electronic(InputStructure& is,vector<ElectronicStructure>& es,int
       tim = (i*is.nucl_dt + j*is.elec_dt);
       Efield(is,tim,Ef,Eex);
       es[i].propagate_coefficients2(is.elec_dt,Ef);
-      es[i].update_hop_prob1(is.elec_dt,is.boltz_flag,is.Temp,Ef,Eex);
+
+      // Update hopping probabilities
+      if(is.sh_algo==0){ es[i].update_hop_prob_fssh(is.elec_dt,is.boltz_flag,is.Temp,Ef,Eex,rates);  }
+      else if(is.sh_algo==1){  es[i].update_hop_prob_gfsh(is.elec_dt,is.boltz_flag,is.Temp,Ef,Eex,rates);  }
+      else if(is.sh_algo==2){  es[i].update_hop_prob_mssh(is.elec_dt,is.boltz_flag,is.Temp,Ef,Eex,rates);  }
+
     }//j
   }
 
