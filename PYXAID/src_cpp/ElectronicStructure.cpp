@@ -275,11 +275,13 @@ void ElectronicStructure::update_hop_prob_gfsh(double dt,int boltz_flag, double 
   matrix* C_dot; C_dot = new matrix(num_states,1);
   *Heff = *Hcurr + ( Ef.M[0] * (*Hprimex) + Ef.M[1] * (*Hprimey) + Ef.M[2] * (*Hprimez));
 
+//  exit(0);
   *C_dot = -one * (*Heff * *Ccurr);  // assume hbar = 1
 
   matrix* A_dot; A_dot = new matrix(num_states,num_states);
-  *A_dot = (*C_dot).conj() * *Ccurr + *C_dot * (*Ccurr).conj();  // this should be real matrix
+  *A_dot = (*C_dot).conj() * (*Ccurr).T() + (*Ccurr).conj() * (*C_dot).T();  // this should be real matrix
 
+//  exit(0);
 
   vector<double> a_dot(num_states,0.0);
   vector<double> a(num_states,0.0);

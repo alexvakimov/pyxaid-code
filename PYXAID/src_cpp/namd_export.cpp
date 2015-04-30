@@ -560,14 +560,14 @@ int namd(boost::python::dict inp_params){
         run_decoherence_rates(params,me_es,me_states,icond);
     }
     //>>>>> Run NA-MD
-    if(params.runtype=="namd" && params.decoherence==0){
-        cout<<"Starting na-md simulations\n";
-        run_namd(params,me_es,me_states,icond); 
-    }
-    if(params.runtype=="namd" && params.decoherence>0){
-        cout<<"Starting na-md simulations with decoherence\n";
+//    if(params.runtype=="namd" && params.decoherence==0){
+//        cout<<"Starting na-md simulations\n";
+//        run_namd(params,me_es,me_states,icond); 
+//    }
+//    if(params.runtype=="namd" && params.decoherence>0){
+        cout<<"Starting na-md simulations with (optional) decoherence\n";
         run_namd1(params,me_es,me_states,icond);
-    }
+//    }
 
     oe_es.clear();
     me_es.clear();
