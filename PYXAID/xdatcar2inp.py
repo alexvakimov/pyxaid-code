@@ -147,6 +147,6 @@ def xdatcar2inp(out_filename,templ_filename,wd,prefix,t0,tmax,dt):
 
    
 
-
-xdatcar2inp("xdatacar","x0.scf.in", "wd", "x0.scf",0,5,1)
+# Example of usage
+#xdatcar2inp("xdatacar","x0.scf.in", "wd", "x0.scf",0,5,1)
 
