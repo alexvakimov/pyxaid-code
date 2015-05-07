@@ -1,0 +1,26 @@
+#!/bin/bash
+#PBS -A lc_op
+#PBS -l nodes=1:ppn=1
+#PBS -l walltime=00:30:00
+#PBS -l pvmem=1000mb
+#PBS -o qespresso.out
+#PBS -j oe
+#PBS -N my_job
+#PBS -m n
+#PBS -V 
+
+
+exe_qespresso=/usr/usc/qespresso/5.1/gnu/bin/pw.x
+
+
+cd $PBS_O_WORKDIR
+echo $PBS_O_WORKDIR
+
+# Don't forget to source right MPI library:
+source /usr/usc/openmpi/1.8.1/gnu/setup.sh
+
+NP=$(wc -l $PBS_NODEFILE | awk '{print $1}')
+echo $NP
+
+mpirun -n $NP $exe_qespresso < x.md.in > x.md.out
+

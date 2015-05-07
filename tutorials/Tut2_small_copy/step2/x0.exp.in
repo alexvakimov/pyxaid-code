@@ -1,0 +1,10 @@
+&inputpp
+  prefix = 'x0',
+  outdir = './',
+  pseudo_dir = '/home/rcf-40/akimov/Soft1/tutorials/Tut2_small_copy/step1/',
+  psfile(1) = 'C.pbe-rrkjus.UPF',
+  psfile(2) = 'H.pbe-rrkjus.UPF',
+  single_file = .FALSE.,
+  ascii = .TRUE.,
+  uspp_spsi = .FALSE.,
+/
