@@ -96,7 +96,6 @@ def sum_pdos(prefix,lst,nat,symb_lst,out,E_f,nspin,do_convolve,dx0,dx,var,PT):
 # dx - final grid spacing
 # PT - periodic table - a list of the atom types to look for
 
-
 # Determine the size of the files (number and coordinates of x grid points)
     stat = 0
     XP = []
@@ -115,8 +114,16 @@ def sum_pdos(prefix,lst,nat,symb_lst,out,E_f,nspin,do_convolve,dx0,dx,var,PT):
                         f = open(filename,'r')
                         A = f.readlines()
                         f.close()
+
+                        start_line = 5
+                        if symb=="s":
+                            start_line = nspin*1 + 3
+                        elif symb=="p":
+                            start_line = nspin*3 + 3
+                        elif symb=="d":
+                            start_line = nspin*5 + 3
                     
-                        for a in A[1:]:
+                        for a in A[start_line:]:
                             tmp = a.split()
                             line = []
                             i = 0
@@ -133,7 +140,7 @@ def sum_pdos(prefix,lst,nat,symb_lst,out,E_f,nspin,do_convolve,dx0,dx,var,PT):
 
     # Dimension of the file matrix
     T = len(XP)
-    X = nspin + 1  # Only total and total up/down for spin-polarized case
+    X = nspin + 1  # Only total (for unpolarized) and total up + total down (for spin-polarized) 
 
     print "Dimensions are: ", T, "by", X
 
@@ -155,12 +162,21 @@ def sum_pdos(prefix,lst,nat,symb_lst,out,E_f,nspin,do_convolve,dx0,dx,var,PT):
                         f = open(filename,'r')
                         A = f.readlines()
                         f.close()
+
+                        start_line = 5
+                        if symb=="s":
+                            start_line = nspin*1 + 3
+                        elif symb=="p":
+                            start_line = nspin*3 + 3
+                        elif symb=="d":
+                            start_line = nspin*5 + 3
+
             
                         # Summ up all densities
                         t = 0
                         while t<T:
                             x = 1
-                            tmp = A[t+1].split()
+                            tmp = A[t+start_line].split()
                             while x<X:
                                 XP[t][x] = XP[t][x] + scl*float(tmp[x])
                                 x = x + 1                           
