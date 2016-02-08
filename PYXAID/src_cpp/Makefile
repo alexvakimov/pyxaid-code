@@ -1,35 +1,14 @@
 FLAGS= -fno-for-scope -O2 -fPIC
 CPP=c++
 # BOOST
-# v 1.52.0
-#p1=/usr/local/boost/1.52.0/include
-#pl1=/usr/local/boost/1.52.0/lib
-# v 1.49.0
-#p1=/usr/local/boost/boost_1_49_0/include
-#pl1=/usr/local/boost/boost_1_49_0/lib
-
-# BLUEHIVE 2
-# v 1.55.0
-#p1=/software/boost/1.55.0/b2/include
-#pl1=/software/boost/1.55.0/b2/lib
-p1=/usr/usc/boost/1.55.0/include/boost
-pl1=/usr/usc/boost/1.55.0/lib
-
+# UB CCR
+p1=/util/academic/boost/v1.57.0/include/boost
+pl1=/util/academic/boost/v1.57.0/lib
 
 # PYTHON
-# v 2.7.3
-#p2=/usr/local/python/2.7.3/include/python2.7
-#pl2=/usr/local/python/2.7.3/lib
-# v 2.7
-#p2=/usr/local/python/2.7/include/python2.7
-#pl2=/usr/local/python/2.7/lib
-# 
-# BLUEHIVE 2
-# v 2.7.6
-#p2=/software/python/2.7.6/include/python2.7
-#pl2=/software/python/2.7.6/lib
-p2=/usr/usc/python/2.7.8/include/python2.7
-pl2=/usr/usc/python/2.7.8/lib
+# UB CCR
+p2=/util/academic/python/2.7.6/include/python2.7
+pl2=/util/academic/python/2.7.6/lib
 
 
 I=-I ${p1} -I ${p2}

@@ -1,6 +1,6 @@
 &CONTROL
   calculation = 'scf',
-  pseudo_dir = '/software/group/oprezhdo_group/QE_PP/revpbe/PSEUDOPOTENTIALS_NC/',
+  pseudo_dir = '/projects/academic/alexeyak/alexeyak/pyxaid-code/tutorials/Tut2_small/step1/',
   outdir = './',
   prefix = 'x0',
   disk_io = 'low',
@@ -9,7 +9,7 @@
 
 &SYSTEM
   ibrav = 0,
-  celldm(1) = 24.08,
+  celldm(1) = 1.89,
   nat = 6,
   ntyp = 2,
   nspin = 2,
@@ -39,16 +39,15 @@
 
 
 ATOMIC_SPECIES
- C  12.01  C.revpbe-nc.UPF
- H  1.008  H.revpbe-n-nc.UPF
+ C  12.01  C.pbe-hgh.UPF
+ H  1.008  H.pbe-hgh.UPF
 
 
 K_POINTS gamma                  
                                
 CELL_PARAMETERS
-     1.0000000    0.0000000    0.0000000
-     0.0000000    1.0000000    0.0000000
-     0.0000000    0.0000000    1.0000000
+    10.0000000    0.0000000    0.0000000
+     0.0000000   10.0000000    0.0000000
+     0.0000000    0.0000000   10.0000000
  
-
 

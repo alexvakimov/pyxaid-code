@@ -1,13 +1,31 @@
-#!/bin/bash
-#SBATCH -A exciton
-#SBATCH -p exciton
-#SBATCH -N 1
-#SBATCH -n 4
-#SBATCH --mem-per-cpu=1000
-#SBATCH -t 2:00:00
-#SBATCH -J qespresso
-#SBATCH -e err_%j
-#SBATCH -o out_%j
+#!/bin/sh
+#SBATCH --partition=valhalla
+#SBATCH --clusters=chemistry
+#SBATCH --time=00:20:00
+#SBATCH --nodes=1
+#SBATCH --ntasks-per-node=4
+#SBATCH --mem=5000
+#SBATCH --mail-user=alexeyak@buffalo.edu
+
+echo "SLURM_JOBID="$SLURM_JOBID
+echo "SLURM_JOB_NODELIST="$SLURM_JOB_NODELIST
+echo "SLURM_NNODES="$SLURM_NNODES
+echo "SLURMTMPDIR="$SLURMTMPDIR
+echo "working directory="$SLURM_SUBMIT_DIR
+
+NPROCS=`srun --nodes=${SLURM_NNODES} bash -c 'hostname' |wc -l`
+echo NPROCS=$NPROCS
+
+module load intel/16.0
+module load intel-mpi/5.1.1
+module load mkl/11.3
+module load espresso
+
+
+#The PMI library is necessary for srun
+export I_MPI_PMI_LIBRARY=/usr/lib64/libpmi.so
+
+
 
 
 
@@ -15,10 +33,10 @@
 # Setup all manual parameters here
 # Must be ABSOLUTE paths
 NP=4
-exe_qespresso=/software/group/oprezhdo_group/espresso-5.1/bin/pw.x
-exe_export=/software/group/oprezhdo_group/espresso-5.1/bin/pw_export.x
-exe_convert=/software/group/oprezhdo_group/espresso-5.0.2/bin/iotk
-res=/scratch/aakimov/QE_tests/pyxaid_tut2/step2/res
+exe_qespresso=/util/academic/espresso/espresso-5.2.1/bin/pw.x
+exe_export=/util/academic/espresso/espresso-5.2.1/bin/pw_export.x
+exe_convert=/util/academic/espresso/espresso-5.2.1/bin/iotk
+res=/projects/academic/alexeyak/alexeyak/pyxaid-code/tutorials/Tut2_small/step2/res
 
 # These will be assigned automatically, leave them as they are
 param1=
@@ -34,12 +52,12 @@ params[\"EXE\"]=\"$exe_qespresso\"
 params[\"EXE_EXPORT\"]=\"$exe_export\"
 params[\"EXE_CONVERT\"] = \"$exe_convert\"
 params[\"start_indx\"]=$param1
-params[\"stop_indx\"]=$param2
+params[\"stop_indx\"]=$param2	
 params[\"wd\"]=\"wd_test\"
 params[\"rd\"]=\"$res\"
-params[\"minband\"]=1
+params[\"minband\"]=4
 params[\"nocc\"]=6
-params[\"maxband\"]=20
+params[\"maxband\"]=10
 params[\"nac_method\"]=0
 params[\"wfc_preprocess\"]=\"complete\"
 params[\"do_complete\"]=1

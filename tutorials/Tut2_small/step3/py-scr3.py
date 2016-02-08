@@ -12,7 +12,7 @@ params = {}
 # These paths must direct to the folder that contains the results of
 # the step2 calculations (Ham_ and (optinally) Hprime_ files) and give
 # the prefixes and suffixes of the files to read in
-rt = "/scratch/aakimov/QE_tests/pyxaid_tut2/step2" 
+rt = "/projects/academic/alexeyak/alexeyak/pyxaid-code/tutorials/Tut2_small/step2" 
 params["Ham_re_prefix"] = rt+"/res/0_Ham_"
 params["Ham_re_suffix"] = "_re"
 params["Ham_im_prefix"] = rt+"/res/0_Ham_"
@@ -39,7 +39,7 @@ params["runtype"] = "namd"                   # Type of calculation to perform. P
                                              # perform only pre-processing steps - this will create the files with
                                              # the energies of basis states and will output some useful information,
                                              # it may be particularly helpful for preparing your input
-params["decoherence"] = 0                    # Do you want to include decoherence via DISH? Possible values:
+params["decoherence"] = 1                    # Do you want to include decoherence via DISH? Possible values:
                                              # 0 - no, 1 - yes
 params["is_field"] = 0                       # Do you want to include laser excitation via explicit light-matter
                                              # interaction Hamiltonian? Possible values: 0 - no, 1 - yes
@@ -52,7 +52,7 @@ params["integrator"] = 0                     # Integrator to solve TD-SE. Possib
 
 # NA-MD trajectory and SH control 
 params["namdtime"] = 25                      # Trajectory time, fs
-params["num_sh_traj"] = 1000                 # Number of stochastic realizations for each initial condition
+params["num_sh_traj"] = 100                  # Number of stochastic realizations for each initial condition
 params["boltz_flag"] = 1                     # Boltzmann flag (set to 1 anyways)
 params["Temp"] = 300.0                       # Temperature of the system
 params["alp_bet"] = 0                        # How to treat spin. Possible values: 0 - alpha and beta spins are not
@@ -83,12 +83,13 @@ params["field_fluence"] = 1.0               # Defines the light radiation intens
 
 
 # Set active space and the basis states
-params["active_space"] = [5,6,7,8]
+params["active_space"] = [2,3,4,5]
 
 params["states"] = []
-params["states"].append(["GS",[5,-5,6,-6],0.00])  # ground state
-params["states"].append(["S1",[5,-5,6,-7],0.00])  # excited state -6 -> -7
-
+params["states"].append(["GS",[2,-2,3,-3],0.00])  # ground state
+params["states"].append(["S1",[2,-2,3,-4],0.00])  # excited state -3 (HOMO) -> -4 (LUMO)
+#params["states"].append(["S1",[2,-2,3,-5],0.00])  #  HOMO -> LUMO + 1
+#params["states"].append(["S1",[2,-4,3,-3],0.00])  # HOMO -1 -> LUMO
 
 
 # Initial conditions
@@ -103,6 +104,14 @@ while i<10:
     i = i + 1
 
 params["iconds"] = ic
+
+# Scale NACs
+# Below is a small snippet that scales all NACs by 1000.0 (so no practical effect)
+nmicrost = len(params["states"]) # number of (micro)states
+params["nac_scale"] = []
+for i in range(0,nmicrost):
+    for j in range(0,nmicrost):
+        params["nac_scale"].append([i,j,1000.0]) 
 
 
 
@@ -133,9 +142,12 @@ opt = 12                         # Defines the type of the averaging we want to 
 
 # Define the groups of states for which we want to know the total population as a function of time
 MS = []
-for i in range(0,Nstates):
-    MS.append([i])   # In our case - each group of states (macrostate) contains only a single basis configuration
+#for i in range(0,Nstates):
+#    MS.append([i])   # In our case - each group of states (macrostate) contains only a single basis configuration
                      # (microstate)
+MS.append([0])
+MS.append([1])
+
 
 res_dir = os.getcwd()+"/macro"  # Hey! : you need to create this folder in the current directory
                                 # This is where the averaged results will be written

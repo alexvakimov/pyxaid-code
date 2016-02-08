@@ -1,15 +1,21 @@
-#!/bin/bash
-#SBATCH -A exciton
-#SBATCH -p exciton
-#SBATCH -N 1
-#SBATCH -n 1
-#SBATCH --mem-per-cpu=1000
-#SBATCH -t 2:00:00
-#SBATCH -J pyxaid
-#SBATCH -e out_%j
-#SBATCH -o out_%j
+#!/bin/sh
+#SBATCH --partition=valhalla
+#SBATCH --clusters=chemistry
+#SBATCH --time=00:10:00
+#SBATCH --nodes=1
+#SBATCH --ntasks-per-node=1
+#SBATCH --mem=5000
+#SBATCH --mail-user=alexeyak@buffalo.edu
+
+echo "SLURM_JOBID="$SLURM_JOBID
+echo "SLURM_JOB_NODELIST="$SLURM_JOB_NODELIST
+echo "SLURM_NNODES="$SLURM_NNODES
+echo "SLURMTMPDIR="$SLURMTMPDIR
+echo "working directory="$SLURM_SUBMIT_DIR
+
+NPROCS=`srun --nodes=${SLURM_NNODES} bash -c 'hostname' |wc -l`
+echo NPROCS=$NPROCS
 
 
-
-python py-scr3.py  > namd_%j
+python py-scr3.py
 
