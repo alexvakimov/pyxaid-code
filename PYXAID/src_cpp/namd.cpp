@@ -33,18 +33,30 @@ void hop(vector<double>& sh_prob,int& hopstate,int numstates){
  sh_prob[i] - is probability to hop from given state  to state i
  hopstate - will contain the state where we actually hopped
 ************************************************/
+  int i;
   double left,right,ksi;
 
   int in = hopstate; // initial state
-  int hstate = 0;
+  int hstate = -1; // set to an absurd value, so that run fails explicitly if the
+                   // surface hopping probabilities are stange
   ksi = rand()/((double)RAND_MAX);
 
-  for(int i=0;i<numstates;i++){
-    if(i==0){ left = 0.0; right = sh_prob[in*numstates+i]; }
-    else{ left = right;   right += sh_prob[in*numstates+i]; }
+  // But, to avoid the problems, lets renormalize the hopping probabilities
+  double nrm = 0.0;
+  for(i=0;i<numstates;i++){  nrm += sh_prob[in*numstates+i];  }  
+
+  for(i=0;i<numstates;i++){
+    if(i==0){ left = 0.0; right = (sh_prob[in*numstates+i]/nrm); }
+    else{ left = right;   right += (sh_prob[in*numstates+i]/nrm); }
     if((left<ksi) && (ksi<=right)){ hstate = i; }
   }
   hopstate = hstate;
+
+  if(hstate==-1){
+    std::cout<<"Something is wrong in hop(...) function\nExiting now...\n";
+    exit(0);
+  }
+   
 
 }
 
