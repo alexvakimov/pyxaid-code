@@ -230,7 +230,7 @@ def ham_map(prefix,isnap,fsnap,suffix,opt,scl,outfile):
             if(opt==0 or opt==1):
                 M[i][j] = scl * M[i][j] / count
             elif opt==2:
-                M[i][j] = scl * math.sqrt(M[i][j]) / count
+                M[i][j] = scl * math.sqrt(M[i][j] / count ) 
 
             # ======= Print =======            
             if(i==j):
@@ -335,7 +335,7 @@ def ham_map1(energy_prefix,energy_suffix,prefix,isnap,fsnap,suffix,opt,scl1,scl2
             if(opt==0 or opt==1):
                 M[i][j] = scl2 * M[i][j] / count
             elif opt==2:
-                M[i][j] = scl2 * math.sqrt(M[i][j]) / count
+                M[i][j] = scl2 * math.sqrt(M[i][j] / count )
 
             # ======= Print =======            
             if(i==j):
